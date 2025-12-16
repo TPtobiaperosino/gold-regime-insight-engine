@@ -95,6 +95,16 @@
       "hit_rate_display": "46.3%"
     }
   ],
+  "display_labels": {
+    "usd": {
+      "weak": "USD weakening (UUP 12w < 0)",
+      "strong": "USD strengthening (UUP 12w > 0)"
+    },
+    "rates": {
+      "down": "Yields falling (bond prices up; IEF 12w > 0)",
+      "up": "Yields rising (bond prices down; IEF 12w < 0)"
+    }
+  },
   "notes": {
     "avg_weekly_return": "Mean weekly GLD return in that regime.",
     "hit_rate": "Share of weeks with positive GLD return.",

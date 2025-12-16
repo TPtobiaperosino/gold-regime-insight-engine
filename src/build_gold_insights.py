@@ -417,6 +417,10 @@ def build_regime_heatmap(regime_table: pd.DataFrame, cfg: Config) -> Dict[str, o
             "risk_appetite_order": risk_order,
         },
         "cells": cells,
+        "display_labels": {
+            "usd": {"weak": "USD weakening (UUP 12w < 0)", "strong": "USD strengthening (UUP 12w > 0)"},
+            "rates": {"down": "Yields falling (bond prices up; IEF 12w > 0)", "up": "Yields rising (bond prices down; IEF 12w < 0)"},
+        },
         "notes": {
             "avg_weekly_return": "Mean weekly GLD return in that regime.",
             "hit_rate": "Share of weeks with positive GLD return.",
@@ -462,14 +466,22 @@ def build_regime_heatmap(regime_table: pd.DataFrame, cfg: Config) -> Dict[str, o
                 for j in range(mat.shape[1]):
                     ax.text(j, i, ann[i][j], ha="center", va="center", fontsize=9)
 
+            # axis labels and ticks with explicit meanings
             ax.set_xticks(range(len(rates_order)))
-            ax.set_xticklabels(rates_order)
+            ax.set_xticklabels(["Falling yields (IEF > 0)", "Rising yields (IEF < 0)"])
+            ax.set_xlabel("Yields (proxied via IEF 12-week momentum)")
             ax.set_yticks(range(len(usd_order)))
-            ax.set_yticklabels(usd_order)
+            ax.set_yticklabels(["Weakening (<0)", "Strengthening (>0)"])
+            ax.set_ylabel("USD (UUP 12-week momentum)")
             ax.set_title(f"Risk appetite = {risk_app}")
 
+        # main title and subtitle with definitions
+        fig.text(0.5, 0.99, "Regime heatmap", ha="center", fontsize=13, weight="bold")
+        fig.text(0.5, 0.955, "Definitions: USD signal = 12-week momentum of UUP. Rates signal = 12-week momentum of IEF (proxy for yields).", ha="center", fontsize=8)
         fig.colorbar(im, ax=axes.ravel().tolist(), orientation="vertical", label="Avg weekly return")
-        fig.tight_layout()
+        # small footnote
+        fig.text(0.5, 0.02, "Note: IEF is a bond ETF. Bond prices ↑ => yields ↓.", ha="center", fontsize=8)
+        fig.tight_layout(rect=[0, 0.04, 1, 0.93])
         Path(cfg.regime_heatmap_png_path).parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(cfg.regime_heatmap_png_path, dpi=180)
         plt.close(fig)
