@@ -534,51 +534,98 @@ def build_scatter_gold_yield_risk(px_daily: pd.DataFrame, cfg: Config) -> pd.Dat
 
 
 def save_scatter_gold_yield_risk(df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
-    """Save scatter plot and JSON for GLD weekly return vs Δ10Y yield in bps colored by risk appetite."""
+    """Save binned scatter plot (binned means + trend) and JSON for GLD weekly return vs Δ10Y yield in bps colored by risk appetite."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import matplotlib.patches as mpatches
+    from math import isfinite
 
     Path(cfg.scatter_png_path).parent.mkdir(parents=True, exist_ok=True)
 
+    # Binning: 20 bins across entire dy10_bps range
+    n_bins = 20
+    df = df.copy()
+    df = df.reset_index()
+    if df.empty:
+        write_json(cfg.scatter_json_path, {"type": "binned_scatter", "x": "dy10_bps_bin_center", "y": "avg_gld_weekly_return", "series": []})
+        return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
+
+    try:
+        df["bin"] = pd.cut(df["dy10_bps"], bins=n_bins)
+    except Exception:
+        # fallback to qcut if cut fails (e.g., lots of identical values)
+        df["bin"] = pd.qcut(df["dy10_bps"].rank(method="first"), q=n_bins)
+
+    grouped = df.groupby(["risk_appetite", "bin"])
+
+    rows = []
+    for (risk, bin_), g in grouped:
+        n = len(g)
+        if n < 8:
+            continue
+        x_center = float(g["dy10_bps"].mean())
+        y_mean = float(g["gld_ret"].mean())  # keep as decimal for JSON
+        rows.append({"risk": risk, "bin": bin_, "x_center": x_center, "y_mean": y_mean, "n": n})
+
+    if not rows:
+        # nothing after filtering
+        write_json(cfg.scatter_json_path, {"type": "binned_scatter", "x": "dy10_bps_bin_center", "y": "avg_gld_weekly_return", "series": []})
+        # still save an empty figure
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.set_title("Gold weekly return vs Δ10Y yield (bps) — binned averages")
+        fig.tight_layout()
+        fig.savefig(cfg.scatter_png_path, dpi=180)
+        plt.close(fig)
+        return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
+
+    bdf = pd.DataFrame(rows)
+
+    # Prepare JSON payload grouped by risk
+    series = []
+    for risk in bdf["risk"].unique():
+        sub = bdf[bdf["risk"] == risk].sort_values("x_center")
+        pts = [{"x": float(r["x_center"]), "y": float(r["y_mean"]), "n": int(r["n"])} for _, r in sub.iterrows()]
+        series.append({"risk_appetite": risk, "points": pts})
+
+    payload = {"type": "binned_scatter", "x": "dy10_bps_bin_center", "y": "avg_gld_weekly_return", "series": series}
+    write_json(cfg.scatter_json_path, payload)
+
+    # Plotting: one line per risk bucket connecting bin centers + optional linear fit
     fig, ax = plt.subplots(figsize=(8, 5))
+    colors = {"High risk appetite": "#2ecc71", "Medium risk appetite": "#f1c40f", "Low risk appetite": "#e74c3c"}
 
-    colors = {
-        "High risk appetite": "#2ecc71",
-        "Medium risk appetite": "#f1c40f",
-        "Low risk appetite": "#e74c3c",
-    }
+    legend_items = []
+    for risk in sorted(bdf["risk"].unique()):
+        sub = bdf[bdf["risk"] == risk].sort_values("x_center")
+        x = sub["x_center"].values
+        y = sub["y_mean"].values * 100.0  # convert to percent for plotting
+        if len(x) == 0:
+            continue
+        ax.plot(x, y, marker="o", linestyle="-", color=colors.get(risk, "#777777"), linewidth=1.6, markersize=6)
 
-    for label, group in df.groupby("risk_appetite"):
-        ax.scatter(group["dy10_bps"].values, group["gld_ret"].values * 100.0, label=label, color=colors.get(label), alpha=0.85, s=20)
+        # linear fit on binned means if enough points
+        if len(x) >= 2:
+            try:
+                coef = np.polyfit(x, y, 1)
+                slope = coef[0]
+                slope_label = f" (slope={slope:.3f}%/bp)"
+            except Exception:
+                slope_label = ""
+        else:
+            slope_label = ""
+
+        legend_items.append(mpatches.Patch(color=colors.get(risk, "#777777"), label=f"{risk}{slope_label}"))
 
     ax.set_xlabel("Δ 10Y yield (bps, weekly)")
-    ax.set_ylabel("GLD weekly return (%)")
-    ax.set_title("Gold weekly return vs Δ10Y yield (bps), colored by risk appetite")
+    ax.set_ylabel("Avg GLD weekly return (%)")
+    ax.set_title("Gold weekly return vs Δ10Y yield (bps) — binned averages")
     ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
 
-    # legend with title
-    patches = [mpatches.Patch(color=colors[k], label=k) for k in ["High risk appetite", "Medium risk appetite", "Low risk appetite"]]
-    ax.legend(handles=patches, title="Risk appetite", loc="upper right", fontsize=9)
-
+    ax.legend(handles=legend_items, loc="upper right", fontsize=9)
     fig.tight_layout()
     fig.savefig(cfg.scatter_png_path, dpi=180)
     plt.close(fig)
-
-    # JSON for Lovable
-    points = []
-    for dt, row in df.iterrows():
-        points.append({"date": dt.date().isoformat(), "dy10_bps": float(row["dy10_bps"]), "gld_ret": float(row["gld_ret"]), "risk_appetite": str(row["risk_appetite"])})
-
-    payload = {
-        "x": "dy10_bps",
-        "y": "gld_weekly_return",
-        "color": "risk_appetite",
-        "points": points,
-    }
-
-    write_json(cfg.scatter_json_path, payload)
 
     return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
 
