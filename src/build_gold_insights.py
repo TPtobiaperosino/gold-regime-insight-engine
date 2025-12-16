@@ -256,6 +256,105 @@ def expected_impact_from_table(
     return label, {"avg_weekly_return": avg, "hit_rate": hit}
 
 
+def _ordinal(n: int) -> str:
+    n = int(n)
+    if 10 <= (n % 100) <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
+
+def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
+    """Build a compact regime snapshot aligned to the last common weekly date.
+
+    Returns the structure requested by the UI contract (label + metrics).
+    """
+    w = cfg.momentum_weeks
+
+    required = [cfg.usd, cfg.rates, cfg.vix]
+    if not all(r in px_weekly.columns for r in required):
+        return {
+            "label": "USD unknown · Rates unknown · Risk appetite unknown",
+            "metrics": {
+                "usd_momentum_12w_pct": None,
+                "rates_momentum_12w_pct": None,
+                "vix_percentile_104w": None,
+                "vix_interpretation": "VIX data unavailable",
+            },
+        }
+
+    idx = px_weekly[cfg.usd].dropna().index
+    idx = idx.intersection(px_weekly[cfg.rates].dropna().index).intersection(px_weekly[cfg.vix].dropna().index)
+    if idx.empty:
+        return {
+            "label": "USD unknown · Rates unknown · Risk appetite unknown",
+            "metrics": {
+                "usd_momentum_12w_pct": None,
+                "rates_momentum_12w_pct": None,
+                "vix_percentile_104w": None,
+                "vix_interpretation": "VIX data unavailable",
+            },
+        }
+
+    last_dt = idx.max()
+
+    # USD momentum (UUP)
+    usd_s = px_weekly[cfg.usd].dropna()
+    if last_dt in usd_s.index and (usd_s.index.get_loc(last_dt) - w) >= 0:
+        usd_mom = float(usd_s.loc[last_dt] / usd_s.shift(w).loc[last_dt] - 1)
+    else:
+        usd_mom = float("nan")
+    usd_label = "strong" if usd_mom > 0 else "weak"
+
+    # Rates momentum (IEF)
+    rates_s = px_weekly[cfg.rates].dropna()
+    if last_dt in rates_s.index and (rates_s.index.get_loc(last_dt) - w) >= 0:
+        rates_mom = float(rates_s.loc[last_dt] / rates_s.shift(w).loc[last_dt] - 1)
+    else:
+        rates_mom = float("nan")
+    rates_label = "up" if rates_mom < 0 else "down"
+
+    # VIX percentile (104 weeks or available)
+    vix_s = px_weekly[cfg.vix].dropna()
+    vix_until = vix_s.loc[:last_dt].dropna()
+    lookback_n = min(cfg.vix_lookback_weeks, len(vix_until))
+    if lookback_n <= 0:
+        pct = float("nan")
+    else:
+        hist = vix_until.iloc[-lookback_n:]
+        vix_last = hist.iloc[-1]
+        pct = float((hist <= vix_last).mean() * 100.0)
+
+    if not np.isfinite(pct):
+        risk_app = "unknown"
+    elif pct >= 75.0:
+        risk_app = "low"
+    elif pct >= 40.0:
+        risk_app = "medium"
+    else:
+        risk_app = "high"
+
+    pct_round = round(pct, 1) if np.isfinite(pct) else None
+    vix_interpretation = (
+        f"VIX at {_ordinal(round(pct))} percentile → risk appetite {risk_app}"
+        if np.isfinite(pct)
+        else "VIX data unavailable"
+    )
+
+    snapshot = {
+        "label": f"USD {usd_label} · Rates {rates_label} · Risk appetite {risk_app}",
+        "metrics": {
+            "usd_momentum_12w_pct": round(usd_mom * 100.0, 2) if np.isfinite(usd_mom) else None,
+            "rates_momentum_12w_pct": round(rates_mom * 100.0, 2) if np.isfinite(rates_mom) else None,
+            "vix_percentile_104w": pct_round,
+            "vix_interpretation": vix_interpretation,
+        },
+    }
+
+    return snapshot
+
+
 def generate_insights(
     regime_meta: Dict[str, str],
     regime_table: pd.DataFrame,
@@ -559,6 +658,9 @@ def main(cfg: Config = CFG) -> None:
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
     weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
 
+    # compact regime snapshot for KPIs
+    regime_snapshot = build_regime_snapshot(px_weekly=px_weekly, cfg=cfg)
+
     regime_table = build_regime_table(px_weekly=px_weekly, weekly_ret=ret_weekly, cfg=cfg)
     impact, stats_in_regime = expected_impact_from_table(
         regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
@@ -592,12 +694,14 @@ def main(cfg: Config = CFG) -> None:
     latest_payload = {
         "asof": reg_now["asof"],
         "regime": {"usd": reg_now["usd"], "rates": reg_now["rates"], "risk": reg_now["risk"]},
+        "regime_snapshot": regime_snapshot,
         "signals": {
             "mom_usd_12w": reg_now["mom_usd_12w"],
             "mom_rates_12w": reg_now["mom_rates_12w"],
             "vix_level": reg_now["vix_level"],
             "vix_threshold": reg_now["vix_threshold"],
         },
+
         "expected_impact": impact,
         "stats_in_regime": stats_in_regime,
         "rolling_corr_60d_latest": corr_latest,
