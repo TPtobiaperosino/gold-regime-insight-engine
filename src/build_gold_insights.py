@@ -355,7 +355,12 @@ def fmt_num(x: float, decimals: int = 2) -> str | None:
     return f"{x:.{decimals}f}"
 
 
-def save_gold_12m_regime_chart(px_daily: pd.DataFrame, weekly_regimes: pd.DataFrame, reg_now: Dict[str, object], cfg: Config) -> Dict[str, str]:
+def save_gold_12m_regime_chart(
+    px_daily: pd.DataFrame,
+    weekly_regimes: pd.DataFrame,
+    reg_now: Dict[str, object],
+    cfg: Config,
+) -> Dict[str, str]:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -397,7 +402,9 @@ def save_gold_12m_regime_chart(px_daily: pd.DataFrame, weekly_regimes: pd.DataFr
             prev = labels[i]
     ax.axvspan(seg_start, dates[-1], alpha=0.10, color=color_map.get(prev))
 
-    ax.set_title(f"GLD Adj Close (12 months) with weekly regime bands | current={reg_now['usd']}_{reg_now['rates']}_{reg_now['risk']}")
+    ax.set_title(
+        f"GLD Adj Close (12 months) with weekly regime bands | current={reg_now['usd']}_{reg_now['rates']}_{reg_now['risk']}"
+    )
     ax.set_xlabel("Date")
     ax.set_ylabel("GLD Adj Close")
 
@@ -444,7 +451,9 @@ def main(cfg: Config = CFG) -> None:
     weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
 
     regime_table = build_regime_table(px_weekly=px_weekly, weekly_ret=ret_weekly, cfg=cfg)
-    impact, stats_in_regime = expected_impact_from_table(regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"])
+    impact, stats_in_regime = expected_impact_from_table(
+        regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
+    )
 
     corr_last_row = corr_df.iloc[-1].to_dict()
     corr_latest = {
@@ -468,7 +477,9 @@ def main(cfg: Config = CFG) -> None:
         "corr_GLD_VIX": fmt_num(corr_latest["corr_GLD_VIX"], 2),
     }
 
-    chart_meta = save_gold_12m_regime_chart(px_daily=px_daily, weekly_regimes=weekly_regimes, reg_now=reg_now, cfg=cfg)
+    chart_meta = save_gold_12m_regime_chart(
+        px_daily=px_daily, weekly_regimes=weekly_regimes, reg_now=reg_now, cfg=cfg
+    )
 
     latest_payload = {
         "asof": reg_now["asof"],
