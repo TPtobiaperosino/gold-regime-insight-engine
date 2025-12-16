@@ -1,34 +1,34 @@
 {
-  "asof": "2025-12-19",
+  "asof": "2025-12-12",
   "regime": {
     "usd": "strong",
     "rates": "down",
     "risk": "on"
   },
   "signals": {
-    "mom_usd_12w": 0.009413041800166777,
-    "mom_rates_12w": 0.011766193319580509,
-    "vix_level": 16.489999771118164,
+    "mom_usd_12w": 0.01895736244908286,
+    "mom_rates_12w": 0.004601329283528299,
+    "vix_level": 15.739999771118164,
     "vix_threshold": 19.22749948501587
   },
   "expected_impact": "Headwind",
   "stats_in_regime": {
-    "avg_weekly_return": -0.0009267992045401393,
-    "hit_rate": 0.4876847290640394
+    "avg_weekly_return": -0.0009569260917695352,
+    "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.1846739884020207,
-    "corr_GLD_IEF": 0.021798871795735083,
-    "corr_GLD_SPY": 0.16512318183534244,
-    "corr_GLD_VIX": -0.05105424932565791
+    "corr_GLD_UUP": -0.18449047787331066,
+    "corr_GLD_IEF": 0.021796152110647737,
+    "corr_GLD_SPY": 0.1653446745068861,
+    "corr_GLD_VIX": -0.05071407579323775
   },
   "insights": [
     {
       "title": "Current macro regime",
-      "evidence": "USD=strong, Rates=down, Risk=on (asof 2025-12-19)",
+      "evidence": "USD=strong, Rates=down, Risk=on (asof 2025-12-12)",
       "metric": {
-        "avg_weekly_return": -0.0009267992045401393,
-        "hit_rate": 0.4876847290640394,
+        "avg_weekly_return": -0.0009569260917695352,
+        "hit_rate": 0.48514851485148514,
         "impact": "Headwind"
       }
     },
@@ -36,7 +36,7 @@
       "title": "Low reliability in this regime",
       "evidence": "Gold was positive in less than 50% of weeks in similar macro conditions.",
       "metric": {
-        "hit_rate": 0.4876847290640394,
+        "hit_rate": 0.48514851485148514,
         "threshold": 0.5
       }
     }

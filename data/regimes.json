@@ -39,10 +39,10 @@
     "usd": "strong",
     "rates": "down",
     "risk": "on",
-    "avg_weekly_return": -0.0009267992045401393,
-    "vol_weekly": 0.02053497856141797,
-    "n_obs": 203,
-    "hit_rate": 0.4876847290640394
+    "avg_weekly_return": -0.0009569260917695352,
+    "vol_weekly": 0.020581499365692417,
+    "n_obs": 202,
+    "hit_rate": 0.48514851485148514
   },
   {
     "usd": "strong",
