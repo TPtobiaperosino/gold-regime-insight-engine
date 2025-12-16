@@ -1,0 +1,103 @@
+{
+  "dimensions": {
+    "usd_order": [
+      "weak",
+      "strong"
+    ],
+    "rates_order": [
+      "down",
+      "up"
+    ],
+    "risk_appetite_order": [
+      "high",
+      "low"
+    ]
+  },
+  "cells": [
+    {
+      "usd": "weak",
+      "rates": "down",
+      "risk_appetite": "high",
+      "avg_weekly_return": 0.0050007068596221995,
+      "hit_rate": 0.625,
+      "n_obs": 216,
+      "avg_weekly_return_display": "0.50%",
+      "hit_rate_display": "62.5%"
+    },
+    {
+      "usd": "weak",
+      "rates": "down",
+      "risk_appetite": "low",
+      "avg_weekly_return": 0.013214655528804192,
+      "hit_rate": 0.6951219512195121,
+      "n_obs": 82,
+      "avg_weekly_return_display": "1.32%",
+      "hit_rate_display": "69.5%"
+    },
+    {
+      "usd": "weak",
+      "rates": "up",
+      "risk_appetite": "high",
+      "avg_weekly_return": 0.0016745263144814142,
+      "hit_rate": 0.591304347826087,
+      "n_obs": 115,
+      "avg_weekly_return_display": "0.17%",
+      "hit_rate_display": "59.1%"
+    },
+    {
+      "usd": "weak",
+      "rates": "up",
+      "risk_appetite": "low",
+      "avg_weekly_return": 0.002080602415947854,
+      "hit_rate": 0.45454545454545453,
+      "n_obs": 22,
+      "avg_weekly_return_display": "0.21%",
+      "hit_rate_display": "45.5%"
+    },
+    {
+      "usd": "strong",
+      "rates": "down",
+      "risk_appetite": "high",
+      "avg_weekly_return": -0.0009569260917695352,
+      "hit_rate": 0.48514851485148514,
+      "n_obs": 202,
+      "avg_weekly_return_display": "-0.10%",
+      "hit_rate_display": "48.5%"
+    },
+    {
+      "usd": "strong",
+      "rates": "down",
+      "risk_appetite": "low",
+      "avg_weekly_return": 0.0017169566161840354,
+      "hit_rate": 0.53125,
+      "n_obs": 96,
+      "avg_weekly_return_display": "0.17%",
+      "hit_rate_display": "53.1%"
+    },
+    {
+      "usd": "strong",
+      "rates": "up",
+      "risk_appetite": "high",
+      "avg_weekly_return": -0.0013204830353198758,
+      "hit_rate": 0.47802197802197804,
+      "n_obs": 182,
+      "avg_weekly_return_display": "-0.13%",
+      "hit_rate_display": "47.8%"
+    },
+    {
+      "usd": "strong",
+      "rates": "up",
+      "risk_appetite": "low",
+      "avg_weekly_return": -0.001378574083006113,
+      "hit_rate": 0.46296296296296297,
+      "n_obs": 54,
+      "avg_weekly_return_display": "-0.14%",
+      "hit_rate_display": "46.3%"
+    }
+  ],
+  "notes": {
+    "avg_weekly_return": "Mean weekly GLD return in that regime.",
+    "hit_rate": "Share of weeks with positive GLD return.",
+    "n_obs": "Sample size; low n means less reliable."
+  }
+}

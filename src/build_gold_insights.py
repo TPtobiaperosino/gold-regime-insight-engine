@@ -49,6 +49,8 @@ class Config:
     gld_vs_usd_json_path: str = "data/gld_vs_usd_12m.json"
     gld_vs_teny_png_path: str = "data/gld_vs_10y_12m.png"
     gld_vs_teny_json_path: str = "data/gld_vs_10y_12m.json"
+    regime_heatmap_path: str = "data/regime_heatmap.json"
+    regime_heatmap_png_path: str = "data/regime_heatmap.png"
 
 
 CFG = Config()
@@ -353,6 +355,161 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     }
 
     return snapshot
+
+
+def build_regime_heatmap(regime_table: pd.DataFrame, cfg: Config) -> Dict[str, object]:
+    """Build a Lovable-friendly regime heatmap JSON and optional static PNG.
+
+    Returns a summary dict with current_cell, best_cell_by_avg_return, worst_cell_by_avg_return
+    to be embedded into latest.json as `heatmap_summary`.
+    """
+    # orders required by UI
+    usd_order = ["weak", "strong"]
+    rates_order = ["down", "up"]
+    risk_order = ["high", "low"]
+
+    # copy and normalize risk names to risk_appetite
+    df = regime_table.copy()
+    def _map_risk(x: str) -> str:
+        if x == "on":
+            return "high"
+        if x == "off":
+            return "low"
+        return x
+
+    df["risk_appetite"] = df["risk"].apply(_map_risk)
+
+    cells = []
+    for usd in usd_order:
+        for rates in rates_order:
+            for risk_app in risk_order:
+                sel = df[(df["usd"] == usd) & (df["rates"] == rates) & (df["risk_appetite"] == risk_app)]
+                if not sel.empty:
+                    row = sel.iloc[0]
+                    avg = float(row["avg_weekly_return"]) if pd.notna(row["avg_weekly_return"]) else float("nan")
+                    hit = float(row["hit_rate"]) if pd.notna(row["hit_rate"]) else float("nan")
+                    n = int(row["n_obs"]) if pd.notna(row["n_obs"]) else 0
+                else:
+                    avg = float("nan")
+                    hit = float("nan")
+                    n = 0
+
+                avg_disp = fmt_pct(avg, 2) if _is_finite(avg) else None
+                hit_disp = fmt_pct(hit, 1) if _is_finite(hit) else None
+
+                cells.append(
+                    {
+                        "usd": usd,
+                        "rates": rates,
+                        "risk_appetite": risk_app,
+                        "avg_weekly_return": None if not _is_finite(avg) else avg,
+                        "hit_rate": None if not _is_finite(hit) else hit,
+                        "n_obs": n,
+                        "avg_weekly_return_display": avg_disp,
+                        "hit_rate_display": hit_disp,
+                    }
+                )
+
+    payload = {
+        "dimensions": {
+            "usd_order": usd_order,
+            "rates_order": rates_order,
+            "risk_appetite_order": risk_order,
+        },
+        "cells": cells,
+        "notes": {
+            "avg_weekly_return": "Mean weekly GLD return in that regime.",
+            "hit_rate": "Share of weeks with positive GLD return.",
+            "n_obs": "Sample size; low n means less reliable.",
+        },
+    }
+
+    # write JSON
+    write_json(cfg.regime_heatmap_path, payload)
+
+    # try to generate optional PNG (two panels, risk high and low)
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from matplotlib.colors import TwoSlopeNorm
+
+        # prepare grids for avg_weekly_return for each risk_appetite
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+        vmin = min([c["avg_weekly_return"] for c in cells if _is_finite(c["avg_weekly_return"])], default=0)
+        vmax = max([c["avg_weekly_return"] for c in cells if _is_finite(c["avg_weekly_return"])], default=0)
+        max_abs = max(abs(vmin), abs(vmax), 1e-6)
+        norm = TwoSlopeNorm(vcenter=0.0, vmin=-max_abs, vmax=max_abs)
+
+        for ax, risk_app in zip(axes, risk_order):
+            mat = np.zeros((len(usd_order), len(rates_order))) * np.nan
+            ann = [["" for _ in rates_order] for __ in usd_order]
+            for i, usd in enumerate(usd_order):
+                for j, rates in enumerate(rates_order):
+                    rec = next((c for c in cells if c["usd"] == usd and c["rates"] == rates and c["risk_appetite"] == risk_app), None)
+                    if rec is None:
+                        mat[i, j] = np.nan
+                        ann[i][j] = "n=0"
+                    else:
+                        mat[i, j] = rec["avg_weekly_return"] if _is_finite(rec["avg_weekly_return"]) else 0.0
+                        a_disp = rec["avg_weekly_return_display"] or ""
+                        h_disp = rec["hit_rate_display"] or ""
+                        ann[i][j] = f"{a_disp}\n{h_disp}\nn={rec['n_obs']}"
+
+            im = ax.imshow(mat, cmap="RdBu_r", norm=norm, aspect="auto")
+            # annotate
+            for i in range(mat.shape[0]):
+                for j in range(mat.shape[1]):
+                    ax.text(j, i, ann[i][j], ha="center", va="center", fontsize=9)
+
+            ax.set_xticks(range(len(rates_order)))
+            ax.set_xticklabels(rates_order)
+            ax.set_yticks(range(len(usd_order)))
+            ax.set_yticklabels(usd_order)
+            ax.set_title(f"Risk appetite = {risk_app}")
+
+        fig.colorbar(im, ax=axes.ravel().tolist(), orientation="vertical", label="Avg weekly return")
+        fig.tight_layout()
+        Path(cfg.regime_heatmap_png_path).parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(cfg.regime_heatmap_png_path, dpi=180)
+        plt.close(fig)
+        png_path = cfg.regime_heatmap_png_path
+    except Exception:
+        png_path = None
+
+    # build summary
+    # helper to find cell
+    def _find_cell(u, r, ra):
+        return next((c for c in cells if c["usd"] == u and c["rates"] == r and c["risk_appetite"] == ra), None)
+
+    # current cell: determine current values using same logic as current_regime (but mapping risk if needed)
+    # We'll pick latest by searching for max n_obs date is not available here; use reg_table aggregation
+    # fallback: pick the cell matching the last regime computed elsewhere (caller will attach reg_now)
+
+    # choose best/worst by avg_weekly_return with n_obs >= 30 else fallback to all
+    def _pick_best_worst(cells_list):
+        eligible = [c for c in cells_list if c["n_obs"] >= 30 and _is_finite(c["avg_weekly_return"])]
+        if not eligible:
+            eligible = [c for c in cells_list if _is_finite(c["avg_weekly_return"]) ]
+        if not eligible:
+            return None
+        best = max(eligible, key=lambda x: x["avg_weekly_return"])
+        worst = min(eligible, key=lambda x: x["avg_weekly_return"])
+        return best, worst
+
+    pick = _pick_best_worst(cells)
+    best_cell = pick[0] if pick else None
+    worst_cell = pick[1] if pick else None
+
+    summary = {
+        "current_cell": None,  # caller will populate if desired
+        "best_cell_by_avg_return": best_cell,
+        "worst_cell_by_avg_return": worst_cell,
+        "json_path": cfg.regime_heatmap_path,
+        "png_path": png_path,
+    }
+
+    return summary
 
 
 def generate_insights(
@@ -666,6 +823,20 @@ def main(cfg: Config = CFG) -> None:
         regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
     )
 
+    # heatmap JSON + optional PNG
+    heatmap_summary = build_regime_heatmap(regime_table=regime_table, cfg=cfg)
+    # map internal risk to risk_appetite for current cell lookup
+    risk_map = {"on": "high", "off": "low"}
+    current_risk_app = risk_map.get(reg_now["risk"], reg_now["risk"]) if isinstance(reg_now.get("risk"), str) else reg_now.get("risk")
+    current_cell = None
+    try:
+        with open(cfg.regime_heatmap_path, "r", encoding="utf-8") as _f:
+            hm = json.load(_f)
+            current_cell = next((c for c in hm.get("cells", []) if c["usd"] == reg_now["usd"] and c["rates"] == reg_now["rates"] and c["risk_appetite"] == current_risk_app), None)
+    except Exception:
+        current_cell = None
+    heatmap_summary["current_cell"] = current_cell
+
     corr_last_row = corr_df.iloc[-1].to_dict()
     corr_latest = {
         "corr_GLD_UUP": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.usd}", np.nan)),
@@ -711,6 +882,7 @@ def main(cfg: Config = CFG) -> None:
             "gld_vs_usd_12m": chart_meta,
             "gld_vs_10y_12m": teny_meta,
         },
+        "heatmap_summary": heatmap_summary,
         "insights": insights,
     }
 
