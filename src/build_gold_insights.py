@@ -357,7 +357,7 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     return snapshot
 
 
-def build_regime_heatmap(regime_table: pd.DataFrame, cfg: Config) -> Dict[str, object]:
+def build_regime_heatmap(regime_table: pd.DataFrame, cfg: Config, reg_now: dict | None = None) -> Dict[str, object]:
     """Build a Lovable-friendly regime heatmap JSON and optional static PNG.
 
     Returns a summary dict with current_cell, best_cell_by_avg_return, worst_cell_by_avg_return
@@ -431,57 +431,88 @@ def build_regime_heatmap(regime_table: pd.DataFrame, cfg: Config) -> Dict[str, o
     # write JSON
     write_json(cfg.regime_heatmap_path, payload)
 
-    # try to generate optional PNG (two panels, risk high and low)
+    # try to generate minimal dashboard-ready PNG (two panels: High / Low)
+    png_path = None
     try:
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         from matplotlib.colors import TwoSlopeNorm
+        from matplotlib.patches import Rectangle
 
-        # prepare grids for avg_weekly_return for each risk_appetite
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-        vmin = min([c["avg_weekly_return"] for c in cells if _is_finite(c["avg_weekly_return"])], default=0)
-        vmax = max([c["avg_weekly_return"] for c in cells if _is_finite(c["avg_weekly_return"])], default=0)
+        fig, axes = plt.subplots(1, 2, figsize=(11, 4.5), constrained_layout=True)
+
+        # compute symmetric vmin/vmax across both panels
+        vals = [c["avg_weekly_return"] for c in cells if _is_finite(c["avg_weekly_return"]) ]
+        if vals:
+            vmin = min(vals)
+            vmax = max(vals)
+        else:
+            vmin, vmax = -0.001, 0.001
         max_abs = max(abs(vmin), abs(vmax), 1e-6)
         norm = TwoSlopeNorm(vcenter=0.0, vmin=-max_abs, vmax=max_abs)
 
         for ax, risk_app in zip(axes, risk_order):
-            mat = np.zeros((len(usd_order), len(rates_order))) * np.nan
+            mat = np.full((len(usd_order), len(rates_order)), np.nan)
             ann = [["" for _ in rates_order] for __ in usd_order]
             for i, usd in enumerate(usd_order):
                 for j, rates in enumerate(rates_order):
                     rec = next((c for c in cells if c["usd"] == usd and c["rates"] == rates and c["risk_appetite"] == risk_app), None)
-                    if rec is None:
+                    if rec is None or not _is_finite(rec.get("avg_weekly_return", np.nan)):
                         mat[i, j] = np.nan
-                        ann[i][j] = "n=0"
+                        ann[i][j] = f"n=0"
                     else:
-                        mat[i, j] = rec["avg_weekly_return"] if _is_finite(rec["avg_weekly_return"]) else 0.0
-                        a_disp = rec["avg_weekly_return_display"] or ""
-                        h_disp = rec["hit_rate_display"] or ""
-                        ann[i][j] = f"{a_disp}\n{h_disp}\nn={rec['n_obs']}"
+                        mat[i, j] = rec["avg_weekly_return"]
+                        avg_txt = f"avg = {rec['avg_weekly_return']*100:+.2f}%"
+                        n_txt = f"n = {int(rec['n_obs'])}"
+                        ann[i][j] = f"{avg_txt}\n{n_txt}"
 
-            im = ax.imshow(mat, cmap="RdBu_r", norm=norm, aspect="auto")
-            # annotate
+            im = ax.imshow(mat, cmap="RdBu_r", norm=norm, aspect="auto", vmin=-max_abs, vmax=max_abs)
+
+            # annotate with two-line text
             for i in range(mat.shape[0]):
                 for j in range(mat.shape[1]):
                     ax.text(j, i, ann[i][j], ha="center", va="center", fontsize=9)
 
-            # axis labels and ticks with explicit meanings
+            # short ticks
             ax.set_xticks(range(len(rates_order)))
-            ax.set_xticklabels(["Falling yields (IEF > 0)", "Rising yields (IEF < 0)"])
-            ax.set_xlabel("Yields (proxied via IEF 12-week momentum)")
+            ax.set_xticklabels(["Yields↓", "Yields↑"])  # falling / rising
+            ax.set_xlabel("Yields")
             ax.set_yticks(range(len(usd_order)))
-            ax.set_yticklabels(["Weakening (<0)", "Strengthening (>0)"])
-            ax.set_ylabel("USD (UUP 12-week momentum)")
+            ax.set_yticklabels(["USD-", "USD+"])
+            ax.set_ylabel("USD (UUP 12w)")
             ax.set_title(f"Risk appetite = {risk_app}")
 
-        # main title and subtitle with definitions
-        fig.text(0.5, 0.99, "Regime heatmap", ha="center", fontsize=13, weight="bold")
-        fig.text(0.5, 0.955, "Definitions: USD signal = 12-week momentum of UUP. Rates signal = 12-week momentum of IEF (proxy for yields).", ha="center", fontsize=8)
-        fig.colorbar(im, ax=axes.ravel().tolist(), orientation="vertical", label="Avg weekly return")
-        # small footnote
-        fig.text(0.5, 0.02, "Note: IEF is a bond ETF. Bond prices ↑ => yields ↓.", ha="center", fontsize=8)
-        fig.tight_layout(rect=[0, 0.04, 1, 0.93])
+            # highlight current regime cell if provided
+            if reg_now is not None:
+                cur_risk = reg_now.get("risk")
+                # reg_now risk uses low/high; ensure mapping
+                if cur_risk in ["low", "high"] and cur_risk == risk_app:
+                    try:
+                        cur_usd = reg_now.get("usd")
+                        cur_rates = reg_now.get("rates")
+                        i0 = usd_order.index(cur_usd)
+                        j0 = rates_order.index(cur_rates)
+                        rect = Rectangle((j0 - 0.5, i0 - 0.5), 1, 1, fill=False, edgecolor="black", linewidth=1.2)
+                        ax.add_patch(rect)
+                    except Exception:
+                        pass
+
+        # shared colorbar on right
+        cbar = fig.colorbar(im, ax=axes.ravel().tolist(), orientation="vertical", fraction=0.06, pad=0.02)
+        cbar.set_label("Avg weekly return")
+
+        # caption below with short definitions
+        caption = (
+            "USD- = UUP 12w < 0 (USD weakening); USD+ = UUP 12w > 0 (USD strengthening). "
+            "Yields↑ = IEF 12w < 0 (bond prices down); Yields↓ = IEF 12w > 0 (bond prices up). "
+            "Risk appetite buckets = VIX percentile."
+        )
+        fig.text(0.5, 0.01, caption, ha="center", fontsize=8)
+
+        # short main title
+        fig.suptitle("Regime heatmap (avg weekly GLD return)", fontsize=12, weight="bold")
+
         Path(cfg.regime_heatmap_png_path).parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(cfg.regime_heatmap_png_path, dpi=180)
         plt.close(fig)
@@ -835,8 +866,8 @@ def main(cfg: Config = CFG) -> None:
         regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
     )
 
-    # heatmap JSON + optional PNG
-    heatmap_summary = build_regime_heatmap(regime_table=regime_table, cfg=cfg)
+    # heatmap JSON + optional PNG (pass reg_now so PNG can highlight current cell)
+    heatmap_summary = build_regime_heatmap(regime_table=regime_table, cfg=cfg, reg_now=reg_now)
     # map internal risk to risk_appetite for current cell lookup
     risk_map = {"on": "high", "off": "low"}
     current_risk_app = risk_map.get(reg_now["risk"], reg_now["risk"]) if isinstance(reg_now.get("risk"), str) else reg_now.get("risk")

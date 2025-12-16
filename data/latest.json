@@ -26,20 +26,20 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.2013561082433187,
-    "corr_GLD_IEF": 0.008288984692291211,
-    "corr_GLD_SPY": 0.1743339588229074,
-    "corr_GLD_VIX": -0.04287019759199049
+    "corr_GLD_UUP": -0.1832023335455677,
+    "corr_GLD_IEF": 0.01854063068096096,
+    "corr_GLD_SPY": 0.1676095707509715,
+    "corr_GLD_VIX": -0.05141163195254335
   },
   "stats_in_regime_display": {
     "avg_weekly_return": "-0.10%",
     "hit_rate": "48.5%"
   },
   "rolling_corr_60d_latest_display": {
-    "corr_GLD_UUP": "-0.20",
-    "corr_GLD_IEF": "0.01",
+    "corr_GLD_UUP": "-0.18",
+    "corr_GLD_IEF": "0.02",
     "corr_GLD_SPY": "0.17",
-    "corr_GLD_VIX": "-0.04"
+    "corr_GLD_VIX": "-0.05"
   },
   "charts": {
     "gld_vs_usd_12m": {
@@ -83,7 +83,7 @@
       "hit_rate_display": "46.3%"
     },
     "json_path": "data/regime_heatmap.json",
-    "png_path": "data/regime_heatmap.png"
+    "png_path": null
   },
   "insights": [
     {
