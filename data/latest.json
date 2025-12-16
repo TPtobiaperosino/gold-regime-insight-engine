@@ -7,7 +7,7 @@
   },
   "signals": {
     "mom_usd_12w": 0.01895736244908286,
-    "mom_rates_12w": 0.004601409331009165,
+    "mom_rates_12w": 0.004601329283528299,
     "vix_level": 15.739999771118164,
     "vix_threshold": 19.22749948501587
   },
@@ -17,10 +17,20 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.18490259664766925,
-    "corr_GLD_IEF": 0.021724193389639296,
-    "corr_GLD_SPY": 0.16469851052652928,
-    "corr_GLD_VIX": -0.049291273331894515
+    "corr_GLD_UUP": -0.18557355542812484,
+    "corr_GLD_IEF": 0.021933984754144153,
+    "corr_GLD_SPY": 0.16451749698511825,
+    "corr_GLD_VIX": -0.05024028678940879
+  },
+  "stats_in_regime_display": {
+    "avg_weekly_return": "-0.10%",
+    "hit_rate": "48.5%"
+  },
+  "rolling_corr_60d_latest_display": {
+    "corr_GLD_UUP": "-0.19",
+    "corr_GLD_IEF": "0.02",
+    "corr_GLD_SPY": "0.16",
+    "corr_GLD_VIX": "-0.05"
   },
   "insights": [
     {

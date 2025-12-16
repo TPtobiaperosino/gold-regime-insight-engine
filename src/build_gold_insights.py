@@ -410,6 +410,23 @@ def write_json(path: str, payload: object) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
+def _is_finite(x) -> bool:
+    try:
+        return x is not None and np.isfinite(x)
+    except Exception:
+        return False
+
+def fmt_pct(x: float, decimals: int = 1) -> str | None:
+    """0.0042 -> '0.42%'"""
+    if not _is_finite(x):
+        return None
+    return f"{x * 100:.{decimals}f}%"
+
+def fmt_num(x: float, decimals: int = 2) -> str | None:
+    """-0.1849 -> '-0.18'"""
+    if not _is_finite(x):
+        return None
+    return f"{x:.{decimals}f}"
 
 # -----------------------------
 # MAIN
@@ -461,6 +478,18 @@ def main(cfg: Config = CFG) -> None:
     # (6) Insights
     insights = generate_insights(reg_now, regime_table, corr_latest)
 
+    stats_in_regime_display = {
+        "avg_weekly_return": fmt_pct(stats_in_regime["avg_weekly_return"], 2),
+        "hit_rate": fmt_pct(stats_in_regime["hit_rate"], 1),
+    }
+
+    rolling_corr_60d_latest_display = {
+        "corr_GLD_UUP": fmt_num(corr_latest["corr_GLD_UUP"], 2),
+        "corr_GLD_IEF": fmt_num(corr_latest["corr_GLD_IEF"], 2),
+        "corr_GLD_SPY": fmt_num(corr_latest["corr_GLD_SPY"], 2),
+        "corr_GLD_VIX": fmt_num(corr_latest["corr_GLD_VIX"], 2),
+    }
+
     # Build JSON payloads
     latest_payload = {
         "asof": reg_now["asof"],
@@ -474,6 +503,8 @@ def main(cfg: Config = CFG) -> None:
         "expected_impact": impact,
         "stats_in_regime": stats_in_regime,
         "rolling_corr_60d_latest": corr_latest,
+        "stats_in_regime_display": stats_in_regime_display,
+        "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
         "insights": insights,
     }
 
