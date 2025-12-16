@@ -415,7 +415,7 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
 
     # Rolling 60d correlation of daily returns (proof)
     try:
-        ret = px_daily[[cfg.gold, cfg.usd]].pct_change().dropna()
+        ret = px_daily.loc[common_idx, [cfg.gold, cfg.usd]].pct_change().dropna()
         rolling_corr = ret[cfg.gold].rolling(60).corr(ret[cfg.usd])
         rolling_corr_latest = rolling_corr.dropna().iloc[-1] if not rolling_corr.dropna().empty else float("nan")
         corr_text = f"Rolling corr (60d) latest: {rolling_corr_latest:.2f}" if np.isfinite(rolling_corr_latest) else "Rolling corr (60d) latest: N/A"
@@ -424,41 +424,40 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
         rolling_corr_latest = float("nan")
         corr_text = "Rolling corr (60d) latest: N/A"
 
-    # optional shading where rolling corr < -0.40
+    # optional shading where rolling corr < -0.40 (very light)
     try:
         neg_mask = rolling_corr < -0.40
         if neg_mask.any():
-            # find contiguous segments where mask is True
             seg_start = None
             for dt, flag in neg_mask.iteritems():
                 if flag and seg_start is None:
                     seg_start = dt
                 elif not flag and seg_start is not None:
-                    ax.axvspan(seg_start, dt, color="#fdecea", alpha=0.08, linewidth=0)
+                    ax.axvspan(seg_start, dt, color="#fdecea", alpha=0.06, linewidth=0)
                     seg_start = None
             if seg_start is not None:
-                ax.axvspan(seg_start, rolling_corr.index[-1], color="#fdecea", alpha=0.08, linewidth=0)
+                ax.axvspan(seg_start, rolling_corr.index[-1], color="#fdecea", alpha=0.06, linewidth=0)
     except Exception:
         pass
 
-    # small textbox with rolling corr latest
-    ax.text(
+    # place rolling-corr label above the axes to avoid overlapping the lines
+    fig.text(
         0.99,
-        0.95,
+        0.985,
         corr_text,
-        transform=ax.transAxes,
-        fontsize=9,
-        va="top",
         ha="right",
-        bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.75, edgecolor="#cccccc"),
+        va="top",
+        fontsize=9,
+        bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"),
     )
 
-    # combined legend (merge handles from both axes)
+    # combined legend (merge handles from both axes) placed above the axes
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=9)
+    ax.legend(h1 + h2, l1 + l2, loc="upper left", bbox_to_anchor=(0, 1.02), frameon=True, fontsize=9)
 
-    fig.tight_layout()
+    # leave some space at the top for the legend/annotation
+    fig.tight_layout(rect=[0, 0, 1, 0.92])
 
     # save to primary configured path
     Path(cfg.gld_vs_usd_png_path).parent.mkdir(parents=True, exist_ok=True)
