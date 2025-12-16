@@ -187,7 +187,7 @@ def rolling_corr(daily_returns: pd.DataFrame, target: str, drivers: List[str], w
 # 4) Regime rules (spiegabili)
 # -----------------------------
 
-def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, str]:
+def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
     """
     Determina regime corrente usando:
     - USD strong/weak via momentum UUP (12w)
@@ -515,7 +515,7 @@ def main(cfg: Config = CFG) -> None:
         "series": (
             corr_df.reset_index()
             .rename(columns={"Date": "date", "index": "date"})
-            .assign(date=lambda d: d[d.columns[0]].dt.date.astype(str))
+            .assign(date=lambda d: d["date"].dt.date.astype(str))
             .to_dict(orient="records")
         ),
     }

@@ -17,19 +17,19 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.18557355542812484,
-    "corr_GLD_IEF": 0.021933984754144153,
-    "corr_GLD_SPY": 0.16451749698511825,
-    "corr_GLD_VIX": -0.05024028678940879
+    "corr_GLD_UUP": -0.18451469163044112,
+    "corr_GLD_IEF": 0.02105126522421202,
+    "corr_GLD_SPY": 0.16603306910656832,
+    "corr_GLD_VIX": -0.05017129906488954
   },
   "stats_in_regime_display": {
     "avg_weekly_return": "-0.10%",
     "hit_rate": "48.5%"
   },
   "rolling_corr_60d_latest_display": {
-    "corr_GLD_UUP": "-0.19",
+    "corr_GLD_UUP": "-0.18",
     "corr_GLD_IEF": "0.02",
-    "corr_GLD_SPY": "0.16",
+    "corr_GLD_SPY": "0.17",
     "corr_GLD_VIX": "-0.05"
   },
   "insights": [
