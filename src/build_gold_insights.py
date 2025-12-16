@@ -436,6 +436,8 @@ def main(cfg: Config = CFG) -> None:
         window_days=cfg.rolling_corr_days,
     )
 
+    corr_df = corr_df.rename(columns={f"corr_{cfg.gold}_{cfg.vix}": f"corr_{cfg.gold}_VIX"})
+
     # (4) Regime current
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
 
@@ -453,7 +455,7 @@ def main(cfg: Config = CFG) -> None:
         "corr_GLD_UUP": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.usd}", np.nan)),
         "corr_GLD_IEF": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.rates}", np.nan)),
         "corr_GLD_SPY": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.equity}", np.nan)),
-        "corr_GLD_VIX": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.vix}", np.nan)),
+        "corr_GLD_VIX": float(corr_last_row.get(f"corr_{cfg.gold}_VIX", np.nan)),
     }
 
     # (6) Insights
