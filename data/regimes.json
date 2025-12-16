@@ -1,0 +1,74 @@
+[
+  {
+    "usd": "strong",
+    "rates": "down",
+    "risk": "off",
+    "avg_weekly_return": 0.0017169566161840354,
+    "vol_weekly": 0.033988627875526894,
+    "n_obs": 96,
+    "hit_rate": 0.53125
+  },
+  {
+    "usd": "strong",
+    "rates": "up",
+    "risk": "off",
+    "avg_weekly_return": -0.001378574083006113,
+    "vol_weekly": 0.021448624498552837,
+    "n_obs": 54,
+    "hit_rate": 0.46296296296296297
+  },
+  {
+    "usd": "weak",
+    "rates": "down",
+    "risk": "off",
+    "avg_weekly_return": 0.013214655528804192,
+    "vol_weekly": 0.028724692515723477,
+    "n_obs": 82,
+    "hit_rate": 0.6951219512195121
+  },
+  {
+    "usd": "weak",
+    "rates": "up",
+    "risk": "off",
+    "avg_weekly_return": 0.002080602415947854,
+    "vol_weekly": 0.01905399440023065,
+    "n_obs": 22,
+    "hit_rate": 0.45454545454545453
+  },
+  {
+    "usd": "strong",
+    "rates": "down",
+    "risk": "on",
+    "avg_weekly_return": -0.0009267992045401393,
+    "vol_weekly": 0.02053497856141797,
+    "n_obs": 203,
+    "hit_rate": 0.4876847290640394
+  },
+  {
+    "usd": "strong",
+    "rates": "up",
+    "risk": "on",
+    "avg_weekly_return": -0.001317972240038272,
+    "vol_weekly": 0.019347792681444133,
+    "n_obs": 182,
+    "hit_rate": 0.47802197802197804
+  },
+  {
+    "usd": "weak",
+    "rates": "down",
+    "risk": "on",
+    "avg_weekly_return": 0.0050007068596221995,
+    "vol_weekly": 0.01964202732437799,
+    "n_obs": 216,
+    "hit_rate": 0.625
+  },
+  {
+    "usd": "weak",
+    "rates": "up",
+    "risk": "on",
+    "avg_weekly_return": 0.0016745263144814142,
+    "vol_weekly": 0.022734430910554382,
+    "n_obs": 115,
+    "hit_rate": 0.591304347826087
+  }
+]
