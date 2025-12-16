@@ -45,8 +45,8 @@ class Config:
 
     gld_vs_usd_png_path: str = "data/gld_vs_usd_12m.png"
     gld_vs_usd_json_path: str = "data/gld_vs_usd_12m.json"
-    scatter_png_path: str = "data/scatter_gold_vs_yield_risk.png"
-    scatter_json_path: str = "data/scatter_gold_vs_yield_risk.json"
+    scatter_png_path: str = "data/scatter_gold_vs_yield.png"
+    scatter_json_path: str = "data/scatter_gold_vs_yield.json"
 
 
 CFG = Config()
@@ -533,45 +533,18 @@ def build_scatter_gold_yield_risk(px_daily: pd.DataFrame, cfg: Config) -> pd.Dat
     return df
 
 
-def save_scatter_gold_yield_risk(df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
-    """Save binned scatter plot (binned means + trend) and JSON for GLD weekly return vs Δ10Y yield in bps colored by risk appetite."""
+def save_scatter_gold_vs_yield(df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
+    """Save simplified binned relationship: binned mean GLD weekly return vs dy10_bps plus linear fit."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    import matplotlib.patches as mpatches
-    from math import isfinite
-
     Path(cfg.scatter_png_path).parent.mkdir(parents=True, exist_ok=True)
 
-    # Binning: 20 bins across entire dy10_bps range
     n_bins = 20
-    df = df.copy()
-    df = df.reset_index()
-    if df.empty:
-        write_json(cfg.scatter_json_path, {"type": "binned_scatter", "x": "dy10_bps_bin_center", "y": "avg_gld_weekly_return", "series": []})
-        return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
-
-    try:
-        df["bin"] = pd.cut(df["dy10_bps"], bins=n_bins)
-    except Exception:
-        # fallback to qcut if cut fails (e.g., lots of identical values)
-        df["bin"] = pd.qcut(df["dy10_bps"].rank(method="first"), q=n_bins)
-
-    grouped = df.groupby(["risk_appetite", "bin"])
-
-    rows = []
-    for (risk, bin_), g in grouped:
-        n = len(g)
-        if n < 8:
-            continue
-        x_center = float(g["dy10_bps"].mean())
-        y_mean = float(g["gld_ret"].mean())  # keep as decimal for JSON
-        rows.append({"risk": risk, "bin": bin_, "x_center": x_center, "y_mean": y_mean, "n": n})
-
-    if not rows:
-        # nothing after filtering
-        write_json(cfg.scatter_json_path, {"type": "binned_scatter", "x": "dy10_bps_bin_center", "y": "avg_gld_weekly_return", "series": []})
-        # still save an empty figure
+    df2 = df.reset_index()
+    if df2.empty:
+        payload = {"type": "binned_line", "x": "dy10_bps", "y": "avg_gld_weekly_return", "fit": {}, "points": []}
+        write_json(cfg.scatter_json_path, payload)
         fig, ax = plt.subplots(figsize=(8, 5))
         ax.set_title("Gold weekly return vs Δ10Y yield (bps) — binned averages")
         fig.tight_layout()
@@ -579,50 +552,57 @@ def save_scatter_gold_yield_risk(df: pd.DataFrame, cfg: Config) -> Dict[str, str
         plt.close(fig)
         return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
 
-    bdf = pd.DataFrame(rows)
+    # create fixed bins over full range
+    try:
+        bins = pd.cut(df2["dy10_bps"], bins=n_bins)
+    except Exception:
+        bins = pd.qcut(df2["dy10_bps"].rank(method="first"), q=n_bins)
 
-    # Prepare JSON payload grouped by risk
-    series = []
-    for risk in bdf["risk"].unique():
-        sub = bdf[bdf["risk"] == risk].sort_values("x_center")
-        pts = [{"x": float(r["x_center"]), "y": float(r["y_mean"]), "n": int(r["n"])} for _, r in sub.iterrows()]
-        series.append({"risk_appetite": risk, "points": pts})
+    agg = df2.groupby(bins).agg(x_center=("dy10_bps", "mean"), y_mean=("gld_ret", "mean"), n=("gld_ret", "count")).reset_index()
+    agg = agg.dropna()
+    # drop small bins
+    agg = agg[agg["n"] >= 10].sort_values("x_center")
 
-    payload = {"type": "binned_scatter", "x": "dy10_bps_bin_center", "y": "avg_gld_weekly_return", "series": series}
+    points = [{"x": float(r["x_center"]), "y": float(r["y_mean"]), "n": int(r["n"])} for _, r in agg.iterrows()]
+
+    # Fit linear model on binned means (y in percent) using numpy.polyfit
+    fit = {}
+    if len(agg) >= 2:
+        x_vals = agg["x_center"].values
+        y_pct = (agg["y_mean"].values * 100.0)
+        coef = np.polyfit(x_vals, y_pct, 1)
+        slope = float(coef[0])
+        intercept = float(coef[1])
+        y_hat = np.polyval(coef, x_vals)
+        ss_res = float(((y_pct - y_hat) ** 2).sum())
+        ss_tot = float(((y_pct - y_pct.mean()) ** 2).sum())
+        r2 = float(1 - ss_res / ss_tot) if ss_tot > 0 else float("nan")
+        fit = {"slope": slope, "intercept": intercept, "r2": r2}
+    else:
+        fit = {"slope": None, "intercept": None, "r2": None}
+
+    payload = {"type": "binned_line", "x": "dy10_bps", "y": "avg_gld_weekly_return", "fit": fit, "points": points}
     write_json(cfg.scatter_json_path, payload)
 
-    # Plotting: one line per risk bucket connecting bin centers + optional linear fit
+    # Plotting
     fig, ax = plt.subplots(figsize=(8, 5))
-    colors = {"High risk appetite": "#2ecc71", "Medium risk appetite": "#f1c40f", "Low risk appetite": "#e74c3c"}
-
-    legend_items = []
-    for risk in sorted(bdf["risk"].unique()):
-        sub = bdf[bdf["risk"] == risk].sort_values("x_center")
-        x = sub["x_center"].values
-        y = sub["y_mean"].values * 100.0  # convert to percent for plotting
-        if len(x) == 0:
-            continue
-        ax.plot(x, y, marker="o", linestyle="-", color=colors.get(risk, "#777777"), linewidth=1.6, markersize=6)
-
-        # linear fit on binned means if enough points
-        if len(x) >= 2:
-            try:
-                coef = np.polyfit(x, y, 1)
-                slope = coef[0]
-                slope_label = f" (slope={slope:.3f}%/bp)"
-            except Exception:
-                slope_label = ""
-        else:
-            slope_label = ""
-
-        legend_items.append(mpatches.Patch(color=colors.get(risk, "#777777"), label=f"{risk}{slope_label}"))
+    if not agg.empty:
+        ax.plot(agg["x_center"], agg["y_mean"] * 100.0, marker="o", linestyle="-", color="#1b6ca8", linewidth=1.6, markersize=6, label="Binned avg")
+        if fit.get("slope") is not None:
+            x_vals = np.linspace(agg["x_center"].min(), agg["x_center"].max(), 100)
+            y_fit = fit["slope"] * x_vals + fit["intercept"]
+            ax.plot(x_vals, y_fit, linestyle="--", color="#d35400", linewidth=1.2, label="Linear fit")
+            # annotation with slope and r2
+            ann = f"slope={fit['slope']:.4f}%/bp\nr2={fit['r2']:.2f}"
+            fig.text(0.99, 0.02, ann, ha="right", va="bottom", fontsize=9, bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"))
 
     ax.set_xlabel("Δ 10Y yield (bps, weekly)")
     ax.set_ylabel("Avg GLD weekly return (%)")
     ax.set_title("Gold weekly return vs Δ10Y yield (bps) — binned averages")
     ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
 
-    ax.legend(handles=legend_items, loc="upper right", fontsize=9)
+    # small legend
+    ax.legend(loc="upper right", fontsize=9)
     fig.tight_layout()
     fig.savefig(cfg.scatter_png_path, dpi=180)
     plt.close(fig)
@@ -652,9 +632,9 @@ def main(cfg: Config = CFG) -> None:
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
     weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
 
-    # scatter dataset: gold weekly return vs Δ10Y yield (bps) colored by risk appetite
+    # scatter dataset: prepare weekly GLD return vs Δ10Y (bps)
     df_scatter = build_scatter_gold_yield_risk(px_daily=px_daily, cfg=cfg)
-    scatter_meta = save_scatter_gold_yield_risk(df_scatter, cfg)
+    scatter_meta = save_scatter_gold_vs_yield(df_scatter, cfg)
     regime_table = build_regime_table(px_weekly=px_weekly, weekly_ret=ret_weekly, cfg=cfg)
     impact, stats_in_regime = expected_impact_from_table(
         regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
@@ -699,7 +679,7 @@ def main(cfg: Config = CFG) -> None:
         "stats_in_regime_display": stats_in_regime_display,
         "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
         "gld_vs_usd_chart_12m": chart_meta,
-        "scatter_gold_vs_yield_risk": scatter_meta,
+        "scatter_gold_vs_yield": scatter_meta,
         "insights": insights,
     }
 
