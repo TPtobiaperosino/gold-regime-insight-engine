@@ -143,11 +143,11 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
 
     if last_dt not in vix_flag.index:
         global_thr = vix_lvl.quantile(cfg.vix_percentile)
-        risk_off = bool(vix_lvl.loc[last_dt] > global_thr) if last_dt in vix_lvl.index else False
+        risk_low = bool(vix_lvl.loc[last_dt] > global_thr) if last_dt in vix_lvl.index else False
         vix_level = float(vix_lvl.loc[last_dt]) if last_dt in vix_lvl.index else float("nan")
         vix_threshold = float(global_thr)
     else:
-        risk_off = bool(vix_flag.loc[last_dt])
+        risk_low = bool(vix_flag.loc[last_dt])
         vix_level = float(vix_lvl.loc[last_dt])
         vix_threshold = float(vix_thr.loc[last_dt])
 
@@ -158,7 +158,7 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
         "asof": last_dt.date().isoformat(),
         "usd": "strong" if usd_strong else "weak",
         "rates": "up" if rates_up else "down",
-        "risk": "off" if risk_off else "on",
+        "risk": "low" if risk_low else "high",
         "mom_usd_12w": float(mom_usd.loc[last_dt]),
         "mom_rates_12w": float(mom_rates.loc[last_dt]),
         "vix_level": vix_level,
@@ -182,7 +182,8 @@ def build_weekly_regimes(px_weekly: pd.DataFrame, cfg: Config) -> pd.DataFrame:
     df["usd"] = np.where(mom_usd.loc[idx] > 0, "strong", "weak")
     df["rates"] = np.where(mom_rates.loc[idx] < 0, "up", "down")
     thr = vix_thr.reindex(idx).fillna(global_thr)
-    df["risk"] = np.where(vix_lvl.loc[idx] > thr, "off", "on")
+    # risk appetite: low when VIX is above threshold, otherwise high
+    df["risk"] = np.where(vix_lvl.loc[idx] > thr, "low", "high")
 
     df["regime"] = df["usd"] + "_" + df["rates"] + "_" + df["risk"]
     return df.dropna()
@@ -206,7 +207,8 @@ def build_regime_table(px_weekly: pd.DataFrame, weekly_ret: pd.DataFrame, cfg: C
 
     global_thr = vix_lvl.quantile(cfg.vix_percentile)
     thr = vix_thr.reindex(idx)
-    df["risk"] = np.where(vix_lvl.loc[idx] > thr.fillna(global_thr), "off", "on")
+    # risk appetite: low when VIX is above threshold, otherwise high
+    df["risk"] = np.where(vix_lvl.loc[idx] > thr.fillna(global_thr), "low", "high")
 
     g = df.groupby(["usd", "rates", "risk"])
     table = g["gold_ret"].agg(
@@ -318,12 +320,12 @@ def generate_insights(
             }
         )
 
-    if risk == "off" and np.isfinite(stats["hit_rate"]) and stats["hit_rate"] < 0.55:
+    if risk == "low" and np.isfinite(stats["hit_rate"]) and stats["hit_rate"] < 0.55:
         insights.append(
             {
                 "title": "Not a consistent crisis hedge (in this sample)",
-                "evidence": "In risk-off weeks, gold did not deliver a high positive frequency historically.",
-                "metric": {"hit_rate": stats["hit_rate"], "context": "risk=off"},
+                "evidence": "In low risk-appetite weeks (VIX elevated), gold did not deliver a high positive frequency historically.",
+                "metric": {"hit_rate": stats["hit_rate"], "context": "risk=low"},
             }
         )
 
@@ -383,16 +385,16 @@ def save_gold_12m_regime_chart(
     reg_rates = reg_rates.loc[mask]
     reg_risk = reg_risk.loc[mask]
 
-    # deterministic color mapping for the 8 regimes
+    # deterministic color mapping for the 8 regimes (risk part now uses 'low'/'high')
     regime_colors = {
-        "strong_down_off": "#c0392b",
-        "strong_down_on": "#e67e22",
-        "strong_up_off": "#2980b9",
-        "strong_up_on": "#5dade2",
-        "weak_down_off": "#7f0000",
-        "weak_down_on": "#d35400",
-        "weak_up_off": "#1b4f72",
-        "weak_up_on": "#85c1e9",
+        "strong_down_low": "#c0392b",
+        "strong_down_high": "#e67e22",
+        "strong_up_low": "#2980b9",
+        "strong_up_high": "#5dade2",
+        "weak_down_low": "#7f0000",
+        "weak_down_high": "#d35400",
+        "weak_up_low": "#1b4f72",
+        "weak_up_high": "#85c1e9",
     }
     # fallback for any unexpected regimes
     unique_regimes = pd.Index(reg_series.unique()).sort_values()
@@ -401,18 +403,20 @@ def save_gold_12m_regime_chart(
     fig, ax = plt.subplots(figsize=(10, 4.6))
     ax.plot(gold.index, gold.values, color="#222222", linewidth=1.4)
 
-    dates = reg_series.index
-    labels = reg_series.values
+    # Plot risk-only bands (risk appetite) as subtle background
+    risk_color_map = {"high": "#d6eaf8", "low": "#f9d6d6"}
+    dates = reg_risk.index
+    labels = reg_risk.values
 
     seg_start = dates[0]
     prev = labels[0]
     for i in range(1, len(labels)):
         if labels[i] != prev:
             seg_end = dates[i]
-            ax.axvspan(seg_start, seg_end, alpha=0.12, color=color_map.get(prev))
+            ax.axvspan(seg_start, seg_end, alpha=0.12, color=risk_color_map.get(prev, "#eeeeee"))
             seg_start = dates[i]
             prev = labels[i]
-    ax.axvspan(seg_start, dates[-1], alpha=0.12, color=color_map.get(prev))
+    ax.axvspan(seg_start, dates[-1], alpha=0.12, color=risk_color_map.get(prev, "#eeeeee"))
 
     # add vertical line for asof date
     try:
@@ -461,17 +465,15 @@ def save_gold_12m_regime_chart(
     except Exception:
         pass
 
-    # legend: create patches for each regime (compact)
+    # legend: only show risk appetite legend for clarity
     import matplotlib.patches as mpatches
 
-    patches = [mpatches.Patch(color=color_map[r], label=r.replace("_", " ")) for r in unique_regimes]
-    # place legend below plot in two rows if too many
-    ncol = 4 if len(patches) > 4 else len(patches)
-    ax.legend(handles=patches, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=ncol, fontsize=9)
+    risk_patches = [
+        mpatches.Patch(color=risk_color_map["high"], label="Risk appetite: high"),
+        mpatches.Patch(color=risk_color_map["low"], label="Risk appetite: low"),
+    ]
+    ax.legend(handles=risk_patches, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2, fontsize=9)
 
-    ax.set_title(
-        f"GLD Adj Close (12 months) with weekly regime bands | current={reg_now['usd']}_{reg_now['rates']}_{reg_now['risk']}"
-    )
     ax.set_xlabel("Date")
     ax.set_ylabel("GLD Adj Close")
 

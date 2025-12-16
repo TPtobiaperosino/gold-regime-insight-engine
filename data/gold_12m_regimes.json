@@ -3,2010 +3,2010 @@
     {
       "date": "2024-12-16",
       "gld_adj_close": 244.8800048828125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2024-12-17",
       "gld_adj_close": 243.94000244140625,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2024-12-18",
       "gld_adj_close": 239.25999450683594,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2024-12-19",
       "gld_adj_close": 239.60000610351562,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2024-12-20",
       "gld_adj_close": 242.10000610351562,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2024-12-23",
       "gld_adj_close": 240.9600067138672,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2024-12-24",
       "gld_adj_close": 241.44000244140625,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2024-12-26",
       "gld_adj_close": 243.07000732421875,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2024-12-27",
       "gld_adj_close": 241.39999389648438,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2024-12-30",
       "gld_adj_close": 240.6300048828125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2024-12-31",
       "gld_adj_close": 242.1300048828125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-02",
       "gld_adj_close": 245.4199981689453,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-03",
       "gld_adj_close": 243.49000549316406,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-06",
       "gld_adj_close": 243.19000244140625,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-07",
       "gld_adj_close": 244.55999755859375,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-08",
       "gld_adj_close": 245.86000061035156,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-10",
       "gld_adj_close": 248.2100067138672,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-01-13",
       "gld_adj_close": 245.74000549316406,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-01-14",
       "gld_adj_close": 247.02999877929688,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-01-15",
       "gld_adj_close": 248.8800048828125,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-01-16",
       "gld_adj_close": 250.60000610351562,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-01-17",
       "gld_adj_close": 249.27000427246094,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-21",
       "gld_adj_close": 253.1300048828125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-22",
       "gld_adj_close": 254.42999267578125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-23",
       "gld_adj_close": 254.07000732421875,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-24",
       "gld_adj_close": 255.64999389648438,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-27",
       "gld_adj_close": 252.99000549316406,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-28",
       "gld_adj_close": 255.17999267578125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-29",
       "gld_adj_close": 254.1999969482422,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-30",
       "gld_adj_close": 258.04998779296875,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-01-31",
       "gld_adj_close": 258.55999755859375,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-03",
       "gld_adj_close": 259.94000244140625,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-04",
       "gld_adj_close": 262.5,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-05",
       "gld_adj_close": 264.1300048828125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-06",
       "gld_adj_close": 263.42999267578125,
-      "regime": "strong_up_on",
+      "regime": "strong_up_high",
       "usd": "strong",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-07",
       "gld_adj_close": 263.8999938964844,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-10",
       "gld_adj_close": 268.3699951171875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-11",
       "gld_adj_close": 267.3900146484375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-12",
       "gld_adj_close": 267.6700134277344,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-13",
       "gld_adj_close": 270.30999755859375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-14",
       "gld_adj_close": 266.2900085449219,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-18",
       "gld_adj_close": 270.70001220703125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-19",
       "gld_adj_close": 270.8500061035156,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-20",
       "gld_adj_close": 270.989990234375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-02-21",
       "gld_adj_close": 270.739990234375,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-02-24",
       "gld_adj_close": 272.2099914550781,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-02-25",
       "gld_adj_close": 268.6199951171875,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-02-26",
       "gld_adj_close": 269.0299987792969,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-02-27",
       "gld_adj_close": 264.92999267578125,
-      "regime": "strong_up_off",
+      "regime": "strong_up_low",
       "usd": "strong",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-02-28",
       "gld_adj_close": 263.2699890136719,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-03",
       "gld_adj_close": 266.739990234375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-04",
       "gld_adj_close": 269.05999755859375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-05",
       "gld_adj_close": 269.6199951171875,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-06",
       "gld_adj_close": 268.25,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-07",
       "gld_adj_close": 268.3900146484375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-10",
       "gld_adj_close": 266.0400085449219,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-11",
       "gld_adj_close": 269.1600036621094,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-12",
       "gld_adj_close": 270.3299865722656,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-13",
       "gld_adj_close": 275.1300048828125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-14",
       "gld_adj_close": 275.239990234375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-17",
       "gld_adj_close": 276.7300109863281,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-18",
       "gld_adj_close": 279.9599914550781,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-19",
       "gld_adj_close": 281.1099853515625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-20",
       "gld_adj_close": 280.75,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-21",
       "gld_adj_close": 278.489990234375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-24",
       "gld_adj_close": 277.25,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-25",
       "gld_adj_close": 278.4700012207031,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-26",
       "gld_adj_close": 278.239990234375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-27",
       "gld_adj_close": 281.9700012207031,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-28",
       "gld_adj_close": 284.05999755859375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-03-31",
       "gld_adj_close": 288.1400146484375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-01",
       "gld_adj_close": 287.57000732421875,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-02",
       "gld_adj_close": 288.1600036621094,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-03",
       "gld_adj_close": 286.4200134277344,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-04",
       "gld_adj_close": 279.7200012207031,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-07",
       "gld_adj_close": 273.7099914550781,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-08",
       "gld_adj_close": 275.20001220703125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-09",
       "gld_adj_close": 285.3800048828125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-10",
       "gld_adj_close": 292.3500061035156,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-11",
       "gld_adj_close": 297.92999267578125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-14",
       "gld_adj_close": 296.2300109863281,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-15",
       "gld_adj_close": 297.7799987792969,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-16",
       "gld_adj_close": 307.4700012207031,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-17",
       "gld_adj_close": 306.1199951171875,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-21",
       "gld_adj_close": 315.5899963378906,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-22",
       "gld_adj_close": 311.1099853515625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-23",
       "gld_adj_close": 303.6499938964844,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-24",
       "gld_adj_close": 308.07000732421875,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-25",
       "gld_adj_close": 304.7300109863281,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-28",
       "gld_adj_close": 309.07000732421875,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-29",
       "gld_adj_close": 306.05999755859375,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-04-30",
       "gld_adj_close": 303.7699890136719,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-01",
       "gld_adj_close": 297.4599914550781,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-02",
       "gld_adj_close": 297.9800109863281,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-05",
       "gld_adj_close": 306.8800048828125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-06",
       "gld_adj_close": 315.4800109863281,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-07",
       "gld_adj_close": 310.75,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-08",
       "gld_adj_close": 304.6300048828125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-09",
       "gld_adj_close": 306.8399963378906,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-12",
       "gld_adj_close": 298.19000244140625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-13",
       "gld_adj_close": 299.4599914550781,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-14",
       "gld_adj_close": 293.1600036621094,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-15",
       "gld_adj_close": 297.8399963378906,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-16",
       "gld_adj_close": 294.239990234375,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-05-19",
       "gld_adj_close": 298.0299987792969,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-05-20",
       "gld_adj_close": 303.5799865722656,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-05-21",
       "gld_adj_close": 305.82000732421875,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-05-22",
       "gld_adj_close": 303.1099853515625,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-05-23",
       "gld_adj_close": 309.75,
-      "regime": "weak_up_off",
+      "regime": "weak_up_low",
       "usd": "weak",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-27",
       "gld_adj_close": 304.5,
-      "regime": "weak_up_off",
+      "regime": "weak_up_low",
       "usd": "weak",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-28",
       "gld_adj_close": 303.80999755859375,
-      "regime": "weak_up_off",
+      "regime": "weak_up_low",
       "usd": "weak",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-29",
       "gld_adj_close": 305.6099853515625,
-      "regime": "weak_up_off",
+      "regime": "weak_up_low",
       "usd": "weak",
       "rates": "up",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-05-30",
       "gld_adj_close": 303.6000061035156,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-02",
       "gld_adj_close": 311.6700134277344,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-03",
       "gld_adj_close": 308.9100036621094,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-04",
       "gld_adj_close": 310.8999938964844,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-05",
       "gld_adj_close": 309.3299865722656,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-06",
       "gld_adj_close": 305.17999267578125,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-06-09",
       "gld_adj_close": 306.6199951171875,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-06-10",
       "gld_adj_close": 306.7099914550781,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-06-11",
       "gld_adj_close": 308.3699951171875,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-06-12",
       "gld_adj_close": 312.20001220703125,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-06-13",
       "gld_adj_close": 316.2900085449219,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-16",
       "gld_adj_close": 311.7799987792969,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-17",
       "gld_adj_close": 311.94000244140625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-18",
       "gld_adj_close": 310.260009765625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-20",
       "gld_adj_close": 310.1300048828125,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-23",
       "gld_adj_close": 311.0799865722656,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-24",
       "gld_adj_close": 306.19000244140625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-25",
       "gld_adj_close": 307.1199951171875,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-26",
       "gld_adj_close": 306.7799987792969,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-06-27",
       "gld_adj_close": 301.2200012207031,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-06-30",
       "gld_adj_close": 304.8299865722656,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-01",
       "gld_adj_close": 307.54998779296875,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-02",
       "gld_adj_close": 309.25,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-03",
       "gld_adj_close": 307.1400146484375,
-      "regime": "weak_up_on",
+      "regime": "weak_up_high",
       "usd": "weak",
       "rates": "up",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-07",
       "gld_adj_close": 307.3699951171875,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-08",
       "gld_adj_close": 304.1600036621094,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-09",
       "gld_adj_close": 305.5199890136719,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-10",
       "gld_adj_close": 306.20001220703125,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-11",
       "gld_adj_close": 309.1400146484375,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-14",
       "gld_adj_close": 308.010009765625,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-15",
       "gld_adj_close": 306.7300109863281,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-16",
       "gld_adj_close": 308.260009765625,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-17",
       "gld_adj_close": 307.5899963378906,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-18",
       "gld_adj_close": 308.3900146484375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-21",
       "gld_adj_close": 313.1300048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-22",
       "gld_adj_close": 316.1000061035156,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-23",
       "gld_adj_close": 312.17999267578125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-24",
       "gld_adj_close": 310.2699890136719,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-25",
       "gld_adj_close": 307.3999938964844,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-28",
       "gld_adj_close": 305.4100036621094,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-29",
       "gld_adj_close": 306.25,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-30",
       "gld_adj_close": 300.9599914550781,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-07-31",
       "gld_adj_close": 302.9599914550781,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-01",
       "gld_adj_close": 309.1099853515625,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-08-04",
       "gld_adj_close": 310.9100036621094,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-08-05",
       "gld_adj_close": 311.1600036621094,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-08-06",
       "gld_adj_close": 310.5,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-08-07",
       "gld_adj_close": 313.1199951171875,
-      "regime": "weak_down_off",
+      "regime": "weak_down_low",
       "usd": "weak",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-08-08",
       "gld_adj_close": 313.04998779296875,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-11",
       "gld_adj_close": 308.54998779296875,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-12",
       "gld_adj_close": 308.2699890136719,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-13",
       "gld_adj_close": 309.2099914550781,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-14",
       "gld_adj_close": 307.25,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-15",
       "gld_adj_close": 307.42999267578125,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-18",
       "gld_adj_close": 306.95001220703125,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-19",
       "gld_adj_close": 305.2699890136719,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-20",
       "gld_adj_close": 308.3599853515625,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-21",
       "gld_adj_close": 307.2900085449219,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-22",
       "gld_adj_close": 310.5799865722656,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-25",
       "gld_adj_close": 309.8299865722656,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-26",
       "gld_adj_close": 312.0799865722656,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-27",
       "gld_adj_close": 312.7099914550781,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-28",
       "gld_adj_close": 315.0299987792969,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-08-29",
       "gld_adj_close": 318.07000732421875,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-02",
       "gld_adj_close": 325.5899963378906,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-03",
       "gld_adj_close": 328.1400146484375,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-04",
       "gld_adj_close": 326.69000244140625,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-05",
       "gld_adj_close": 331.04998779296875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-08",
       "gld_adj_close": 334.82000732421875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-09",
       "gld_adj_close": 334.05999755859375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-10",
       "gld_adj_close": 335.260009765625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-11",
       "gld_adj_close": 334.760009765625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-12",
       "gld_adj_close": 335.4200134277344,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-15",
       "gld_adj_close": 338.9100036621094,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-16",
       "gld_adj_close": 339.5899963378906,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-17",
       "gld_adj_close": 336.9700012207031,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-18",
       "gld_adj_close": 335.6199951171875,
-      "regime": "weak_down_on",
+      "regime": "weak_down_high",
       "usd": "weak",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-19",
       "gld_adj_close": 339.17999267578125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-22",
       "gld_adj_close": 345.04998779296875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-23",
       "gld_adj_close": 346.4599914550781,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-24",
       "gld_adj_close": 343.32000732421875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-25",
       "gld_adj_close": 344.75,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-26",
       "gld_adj_close": 346.739990234375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-29",
       "gld_adj_close": 352.4599914550781,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-09-30",
       "gld_adj_close": 355.4700012207031,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-01",
       "gld_adj_close": 356.0299987792969,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-02",
       "gld_adj_close": 354.7900085449219,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-03",
       "gld_adj_close": 357.6400146484375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-06",
       "gld_adj_close": 364.3800048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-07",
       "gld_adj_close": 366.260009765625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-08",
       "gld_adj_close": 372.29998779296875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-09",
       "gld_adj_close": 365.42999267578125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-10",
       "gld_adj_close": 369.1199951171875,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-13",
       "gld_adj_close": 378.0899963378906,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-14",
       "gld_adj_close": 380.7900085449219,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-15",
       "gld_adj_close": 387.3900146484375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-16",
       "gld_adj_close": 396.45001220703125,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-17",
       "gld_adj_close": 388.989990234375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-20",
       "gld_adj_close": 403.1499938964844,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-21",
       "gld_adj_close": 377.239990234375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-22",
       "gld_adj_close": 377.2799987792969,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-23",
       "gld_adj_close": 378.7900085449219,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-10-24",
       "gld_adj_close": 377.5199890136719,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-27",
       "gld_adj_close": 367.010009765625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-28",
       "gld_adj_close": 364.3800048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-29",
       "gld_adj_close": 363.0,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-30",
       "gld_adj_close": 370.1300048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-10-31",
       "gld_adj_close": 368.1199951171875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-11-03",
       "gld_adj_close": 368.7799987792969,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-11-04",
       "gld_adj_close": 362.32000732421875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-11-05",
       "gld_adj_close": 366.510009765625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-11-06",
       "gld_adj_close": 366.07000732421875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-11-07",
       "gld_adj_close": 368.30999755859375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-10",
       "gld_adj_close": 378.3800048828125,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-11",
       "gld_adj_close": 379.8699951171875,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-12",
       "gld_adj_close": 385.989990234375,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-13",
       "gld_adj_close": 382.8699951171875,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-14",
       "gld_adj_close": 375.9599914550781,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-17",
       "gld_adj_close": 371.6499938964844,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-18",
       "gld_adj_close": 374.3500061035156,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-19",
       "gld_adj_close": 374.9599914550781,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-20",
       "gld_adj_close": 374.8500061035156,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-21",
       "gld_adj_close": 374.2699890136719,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-24",
       "gld_adj_close": 380.20001220703125,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-25",
       "gld_adj_close": 380.0799865722656,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-26",
       "gld_adj_close": 383.1199951171875,
-      "regime": "strong_down_off",
+      "regime": "strong_down_low",
       "usd": "strong",
       "rates": "down",
-      "risk": "off"
+      "risk": "low"
     },
     {
       "date": "2025-11-28",
       "gld_adj_close": 387.8800048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-01",
       "gld_adj_close": 389.75,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-02",
       "gld_adj_close": 387.239990234375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-03",
       "gld_adj_close": 386.8800048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-04",
       "gld_adj_close": 387.1300048828125,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-05",
       "gld_adj_close": 386.44000244140625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-08",
       "gld_adj_close": 385.4200134277344,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-09",
       "gld_adj_close": 387.3999938964844,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-10",
       "gld_adj_close": 389.04998779296875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-11",
       "gld_adj_close": 393.239990234375,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-12",
       "gld_adj_close": 395.44000244140625,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-15",
       "gld_adj_close": 395.79998779296875,
-      "regime": "strong_down_on",
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     },
     {
       "date": "2025-12-16",
-      "gld_adj_close": 395.82501220703125,
-      "regime": "strong_down_on",
+      "gld_adj_close": 396.1700134277344,
+      "regime": "strong_down_high",
       "usd": "strong",
       "rates": "down",
-      "risk": "on"
+      "risk": "high"
     }
   ]
 }

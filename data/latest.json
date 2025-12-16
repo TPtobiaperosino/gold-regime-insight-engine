@@ -3,11 +3,11 @@
   "regime": {
     "usd": "strong",
     "rates": "down",
-    "risk": "on"
+    "risk": "high"
   },
   "signals": {
     "mom_usd_12w": 0.01895736244908286,
-    "mom_rates_12w": 0.004601329283528299,
+    "mom_rates_12w": 0.004601409331009165,
     "vix_level": 15.739999771118164,
     "vix_threshold": 19.22749948501587
   },
@@ -17,10 +17,10 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.1803088237431108,
-    "corr_GLD_IEF": 0.01774600716040642,
-    "corr_GLD_SPY": 0.1680178059889155,
-    "corr_GLD_VIX": -0.050878787687600374
+    "corr_GLD_UUP": -0.1805561954060031,
+    "corr_GLD_IEF": 0.018642220438289298,
+    "corr_GLD_SPY": 0.16746078719249027,
+    "corr_GLD_VIX": -0.05100666248270021
   },
   "stats_in_regime_display": {
     "avg_weekly_return": "-0.10%",
@@ -39,7 +39,7 @@
   "insights": [
     {
       "title": "Current macro regime",
-      "evidence": "USD=strong, Rates=down, Risk=on (asof 2025-12-12)",
+      "evidence": "USD=strong, Rates=down, Risk=high (asof 2025-12-12)",
       "metric": {
         "avg_weekly_return": -0.0009569260917695352,
         "hit_rate": 0.48514851485148514,
