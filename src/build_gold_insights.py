@@ -358,7 +358,11 @@ def fmt_num(x: float, decimals: int = 2) -> str | None:
 
 
 def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
-    """Save GLD and UUP raw price series for the last 12 months as a dual-axis chart and JSON series."""
+    """Save GLD and UUP raw price series for the last 12 months as a dual-axis chart and JSON series.
+
+    Enhancements: color-coded axis labels/ticks, rolling 60d correlation annotation, and optional
+    shading when rolling corr (60d) < -0.40.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -384,29 +388,89 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
         write_json(cfg.gld_vs_usd_json_path, {"series": []})
         return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
-    fig, ax = plt.subplots(figsize=(10, 4.6))
-    ax.plot(gld.index, gld.values, label="GLD", color="#1b6ca8", linewidth=1.6)
-    ax.set_xlabel("Date")
-    ax.set_ylabel("GLD ($)")
+    # colors for series and corresponding axes
+    gld_color = "#1b6ca8"
+    uup_color = "#d35400"
 
-    # primary axis grid only
-    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.35)
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    ln1 = ax.plot(gld.index, gld.values, label="GLD ($, left axis)", color=gld_color, linewidth=1.8)
+    ax.set_xlabel("Date")
+    ax.set_ylabel("GLD ($)", color=gld_color)
+    ax.tick_params(axis="y", colors=gld_color)
+    for tl in ax.get_yticklabels():
+        tl.set_color(gld_color)
+
+    # primary axis grid only (subtle)
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
 
     # twin axis for UUP
     ax2 = ax.twinx()
-    ax2.plot(uup.index, uup.values, label="UUP", color="#d35400", linewidth=1.4)
-    ax2.set_ylabel("UUP ($)")
+    ln2 = ax2.plot(uup.index, uup.values, label="UUP ($, right axis)", color=uup_color, linewidth=1.6)
+    ax2.set_ylabel("UUP ($)", color=uup_color)
+    ax2.tick_params(axis="y", colors=uup_color)
+    for tl in ax2.get_yticklabels():
+        tl.set_color(uup_color)
 
     ax.set_title("GLD vs USD (UUP) — last 12 months (dual-axis)", fontsize=12, weight="bold")
 
-    # combined legend
+    # Rolling 60d correlation of daily returns (proof)
+    try:
+        ret = px_daily[[cfg.gold, cfg.usd]].pct_change().dropna()
+        rolling_corr = ret[cfg.gold].rolling(60).corr(ret[cfg.usd])
+        rolling_corr_latest = rolling_corr.dropna().iloc[-1] if not rolling_corr.dropna().empty else float("nan")
+        corr_text = f"Rolling corr (60d) latest: {rolling_corr_latest:.2f}" if np.isfinite(rolling_corr_latest) else "Rolling corr (60d) latest: N/A"
+    except Exception:
+        rolling_corr = pd.Series(dtype=float)
+        rolling_corr_latest = float("nan")
+        corr_text = "Rolling corr (60d) latest: N/A"
+
+    # optional shading where rolling corr < -0.40
+    try:
+        neg_mask = rolling_corr < -0.40
+        if neg_mask.any():
+            # find contiguous segments where mask is True
+            seg_start = None
+            for dt, flag in neg_mask.iteritems():
+                if flag and seg_start is None:
+                    seg_start = dt
+                elif not flag and seg_start is not None:
+                    ax.axvspan(seg_start, dt, color="#fdecea", alpha=0.08, linewidth=0)
+                    seg_start = None
+            if seg_start is not None:
+                ax.axvspan(seg_start, rolling_corr.index[-1], color="#fdecea", alpha=0.08, linewidth=0)
+    except Exception:
+        pass
+
+    # small textbox with rolling corr latest
+    ax.text(
+        0.99,
+        0.95,
+        corr_text,
+        transform=ax.transAxes,
+        fontsize=9,
+        va="top",
+        ha="right",
+        bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.75, edgecolor="#cccccc"),
+    )
+
+    # combined legend (merge handles from both axes)
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, loc="upper left")
+    ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=9)
 
     fig.tight_layout()
+
+    # save to primary configured path
     Path(cfg.gld_vs_usd_png_path).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(cfg.gld_vs_usd_png_path, dpi=180)
+    # also save to legacy gold_12m path if present so callers still find it
+    if hasattr(cfg, "gold_12m_png_path"):
+        try:
+            Path(cfg.gold_12m_png_path).parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(cfg.gold_12m_png_path, dpi=180)
+        except Exception:
+            pass
+
     plt.close(fig)
 
     df_out = pd.DataFrame(
