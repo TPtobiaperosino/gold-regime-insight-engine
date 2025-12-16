@@ -5,8 +5,8 @@ Output:
 - data/latest.json              -> asof + regime corrente + expected impact + insight cards
 - data/regimes.json             -> tabella 8 combinazioni regime con stats storiche
 - data/rolling_corr.json        -> rolling corr (60 giorni) oro vs driver (USD, rates, SPY, VIX)
-- data/gold_12m_regimes.png     -> GLD Adj Close (12 mesi) + regime bands (weekly)
-- data/gold_12m_regimes.json    -> serie daily per chart (date, price, regime labels)
+- data/gld_vs_usd_12m.png        -> GLD vs USD (UUP) normalized (base=100), last 12 months
+- data/gld_vs_usd_12m.json       -> series for the GLD vs UUP normalized chart
 """
 
 from __future__ import annotations
@@ -42,8 +42,8 @@ class Config:
     regimes_path: str = "data/regimes.json"
     rolling_corr_path: str = "data/rolling_corr.json"
 
-    gold_12m_png_path: str = "data/gold_12m_regimes.png"
-    gold_12m_json_path: str = "data/gold_12m_regimes.json"
+    gld_vs_usd_png_path: str = "data/gld_vs_usd_12m.png"
+    gld_vs_usd_json_path: str = "data/gld_vs_usd_12m.json"
 
 
 CFG = Config()
@@ -357,13 +357,8 @@ def fmt_num(x: float, decimals: int = 2) -> str | None:
     return f"{x:.{decimals}f}"
 
 
-def save_gold_12m_regime_chart(
-    px_daily: pd.DataFrame,
-    weekly_regimes: pd.DataFrame,
-    reg_now: Dict[str, object],
-    cfg: Config,
-    expected_impact: str | None = None,
-) -> Dict[str, str]:
+def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
+    """Save GLD and UUP raw price series for the last 12 months as a dual-axis chart and JSON series."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -371,130 +366,59 @@ def save_gold_12m_regime_chart(
     end = px_daily.index.max()
     start = end - pd.DateOffset(years=1)
 
-    gold = px_daily.loc[px_daily.index >= start, cfg.gold].dropna()
+    gld = px_daily.loc[px_daily.index >= start, cfg.gold].dropna()
+    uup = px_daily.loc[px_daily.index >= start, cfg.usd].dropna()
 
-    reg_series = weekly_regimes["regime"].reindex(gold.index, method="ffill")
-    reg_usd = weekly_regimes["usd"].reindex(gold.index, method="ffill")
-    reg_rates = weekly_regimes["rates"].reindex(gold.index, method="ffill")
-    reg_risk = weekly_regimes["risk"].reindex(gold.index, method="ffill")
+    common_idx = gld.index.intersection(uup.index)
+    gld = gld.reindex(common_idx).dropna()
+    uup = uup.reindex(common_idx).dropna()
 
-    mask = reg_series.notna()
-    gold = gold.loc[mask]
-    reg_series = reg_series.loc[mask]
-    reg_usd = reg_usd.loc[mask]
-    reg_rates = reg_rates.loc[mask]
-    reg_risk = reg_risk.loc[mask]
-
-    # deterministic color mapping for the 8 regimes (risk part now uses 'low'/'high')
-    regime_colors = {
-        "strong_down_low": "#c0392b",
-        "strong_down_high": "#e67e22",
-        "strong_up_low": "#2980b9",
-        "strong_up_high": "#5dade2",
-        "weak_down_low": "#7f0000",
-        "weak_down_high": "#d35400",
-        "weak_up_low": "#1b4f72",
-        "weak_up_high": "#85c1e9",
-    }
-    # fallback for any unexpected regimes
-    unique_regimes = pd.Index(reg_series.unique()).sort_values()
-    color_map = {r: regime_colors.get(r, "#bbbbbb") for r in unique_regimes}
+    if gld.empty or uup.empty:
+        # create empty outputs
+        Path(cfg.gld_vs_usd_png_path).parent.mkdir(parents=True, exist_ok=True)
+        fig, ax = plt.subplots(figsize=(10, 4.6))
+        ax.set_title("GLD vs USD (UUP) — last 12 months (dual-axis)")
+        fig.tight_layout()
+        fig.savefig(cfg.gld_vs_usd_png_path, dpi=180)
+        plt.close(fig)
+        write_json(cfg.gld_vs_usd_json_path, {"series": []})
+        return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
     fig, ax = plt.subplots(figsize=(10, 4.6))
-    ax.plot(gold.index, gold.values, color="#222222", linewidth=1.4)
-
-    # Plot risk-only bands (risk appetite) as subtle background
-    risk_color_map = {"high": "#d6eaf8", "low": "#f9d6d6"}
-    dates = reg_risk.index
-    labels = reg_risk.values
-
-    seg_start = dates[0]
-    prev = labels[0]
-    for i in range(1, len(labels)):
-        if labels[i] != prev:
-            seg_end = dates[i]
-            ax.axvspan(seg_start, seg_end, alpha=0.12, color=risk_color_map.get(prev, "#eeeeee"))
-            seg_start = dates[i]
-            prev = labels[i]
-    ax.axvspan(seg_start, dates[-1], alpha=0.12, color=risk_color_map.get(prev, "#eeeeee"))
-
-    # add vertical line for asof date
-    try:
-        asof_dt = pd.to_datetime(reg_now.get("asof"))
-        ax.axvline(asof_dt, color="#333333", linestyle="--", linewidth=1)
-        ax.text(
-            asof_dt,
-            ax.get_ylim()[1],
-            f" asof {asof_dt.date().isoformat()}",
-            va="top",
-            ha="left",
-            fontsize=8,
-            color="#333333",
-        )
-    except Exception:
-        pass
-
-    # title and concise subtitle
-    ax.set_title("GLD (Adj Close) — last 12 months", fontsize=12, weight="bold")
-    subtitle = f"Current regime: USD {reg_now['usd']} | Rates {reg_now['rates']} | Risk {reg_now['risk']} (asof {reg_now['asof']})"
-    ax.text(0.01, 0.96, subtitle, transform=ax.transAxes, fontsize=9, va="top")
-
-    # optional small textbox with expected impact
-    if expected_impact:
-        tb_text = f"Impact: {expected_impact}"
-        ax.text(
-            0.99,
-            0.02,
-            tb_text,
-            transform=ax.transAxes,
-            fontsize=9,
-            va="bottom",
-            ha="right",
-            bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.7, edgecolor="#dddddd"),
-        )
-
-    # y-axis grid only
-    ax.yaxis.grid(True, linestyle="--", linewidth=0.5, color="#999999", alpha=0.4)
-    ax.xaxis.grid(False)
-
-    # format y-axis as dollars with 0 decimals
-    try:
-        from matplotlib.ticker import FuncFormatter
-
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"${x:,.0f}"))
-    except Exception:
-        pass
-
-    # legend: only show risk appetite legend for clarity
-    import matplotlib.patches as mpatches
-
-    risk_patches = [
-        mpatches.Patch(color=risk_color_map["high"], label="Risk appetite: high"),
-        mpatches.Patch(color=risk_color_map["low"], label="Risk appetite: low"),
-    ]
-    ax.legend(handles=risk_patches, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2, fontsize=9)
-
+    ax.plot(gld.index, gld.values, label="GLD", color="#1b6ca8", linewidth=1.6)
     ax.set_xlabel("Date")
-    ax.set_ylabel("GLD Adj Close")
+    ax.set_ylabel("GLD ($)")
+
+    # primary axis grid only
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.35)
+
+    # twin axis for UUP
+    ax2 = ax.twinx()
+    ax2.plot(uup.index, uup.values, label="UUP", color="#d35400", linewidth=1.4)
+    ax2.set_ylabel("UUP ($)")
+
+    ax.set_title("GLD vs USD (UUP) — last 12 months (dual-axis)", fontsize=12, weight="bold")
+
+    # combined legend
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="upper left")
 
     fig.tight_layout()
-    Path(cfg.gold_12m_png_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(cfg.gold_12m_png_path, dpi=180)
+    Path(cfg.gld_vs_usd_png_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(cfg.gld_vs_usd_png_path, dpi=180)
     plt.close(fig)
 
     df_out = pd.DataFrame(
         {
-            "date": gold.index.date.astype(str),
-            "gld_adj_close": gold.values.astype(float),
-            "regime": reg_series.values.astype(str),
-            "usd": reg_usd.values.astype(str),
-            "rates": reg_rates.values.astype(str),
-            "risk": reg_risk.values.astype(str),
+            "date": gld.index.date.astype(str),
+            "gld": gld.values.astype(float),
+            "uup": uup.values.astype(float),
         }
     )
-    write_json(cfg.gold_12m_json_path, {"series": df_out.to_dict(orient="records")})
+    write_json(cfg.gld_vs_usd_json_path, {"series": df_out.to_dict(orient="records")})
 
-    return {"png_path": cfg.gold_12m_png_path, "json_path": cfg.gold_12m_json_path}
+    return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
 
 def main(cfg: Config = CFG) -> None:
@@ -546,13 +470,7 @@ def main(cfg: Config = CFG) -> None:
         "corr_GLD_VIX": fmt_num(corr_latest["corr_GLD_VIX"], 2),
     }
 
-    chart_meta = save_gold_12m_regime_chart(
-        px_daily=px_daily,
-        weekly_regimes=weekly_regimes,
-        reg_now=reg_now,
-        cfg=cfg,
-        expected_impact=impact,
-    )
+    chart_meta = save_gld_vs_usd_12m_chart(px_daily=px_daily, cfg=cfg)
 
     latest_payload = {
         "asof": reg_now["asof"],
@@ -568,7 +486,7 @@ def main(cfg: Config = CFG) -> None:
         "rolling_corr_60d_latest": corr_latest,
         "stats_in_regime_display": stats_in_regime_display,
         "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
-        "price_chart_12m": chart_meta,
+        "gld_vs_usd_chart_12m": chart_meta,
         "insights": insights,
     }
 
@@ -595,8 +513,8 @@ def main(cfg: Config = CFG) -> None:
     print(f" - {cfg.latest_path}")
     print(f" - {cfg.regimes_path}")
     print(f" - {cfg.rolling_corr_path}")
-    print(f" - {cfg.gold_12m_png_path}")
-    print(f" - {cfg.gold_12m_json_path}")
+    print(f" - {cfg.gld_vs_usd_png_path}")
+    print(f" - {cfg.gld_vs_usd_json_path}")
 
 
 if __name__ == "__main__":
