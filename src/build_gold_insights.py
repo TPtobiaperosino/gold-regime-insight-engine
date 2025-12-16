@@ -360,6 +360,7 @@ def save_gold_12m_regime_chart(
     weekly_regimes: pd.DataFrame,
     reg_now: Dict[str, object],
     cfg: Config,
+    expected_impact: str | None = None,
 ) -> Dict[str, str]:
     import matplotlib
     matplotlib.use("Agg")
@@ -382,12 +383,23 @@ def save_gold_12m_regime_chart(
     reg_rates = reg_rates.loc[mask]
     reg_risk = reg_risk.loc[mask]
 
+    # deterministic color mapping for the 8 regimes
+    regime_colors = {
+        "strong_down_off": "#c0392b",
+        "strong_down_on": "#e67e22",
+        "strong_up_off": "#2980b9",
+        "strong_up_on": "#5dade2",
+        "weak_down_off": "#7f0000",
+        "weak_down_on": "#d35400",
+        "weak_up_off": "#1b4f72",
+        "weak_up_on": "#85c1e9",
+    }
+    # fallback for any unexpected regimes
     unique_regimes = pd.Index(reg_series.unique()).sort_values()
-    cmap = plt.get_cmap("tab10")
-    color_map = {r: cmap(i % 10) for i, r in enumerate(unique_regimes)}
+    color_map = {r: regime_colors.get(r, "#bbbbbb") for r in unique_regimes}
 
     fig, ax = plt.subplots(figsize=(10, 4.6))
-    ax.plot(gold.index, gold.values)
+    ax.plot(gold.index, gold.values, color="#222222", linewidth=1.4)
 
     dates = reg_series.index
     labels = reg_series.values
@@ -397,10 +409,65 @@ def save_gold_12m_regime_chart(
     for i in range(1, len(labels)):
         if labels[i] != prev:
             seg_end = dates[i]
-            ax.axvspan(seg_start, seg_end, alpha=0.10, color=color_map.get(prev))
+            ax.axvspan(seg_start, seg_end, alpha=0.12, color=color_map.get(prev))
             seg_start = dates[i]
             prev = labels[i]
-    ax.axvspan(seg_start, dates[-1], alpha=0.10, color=color_map.get(prev))
+    ax.axvspan(seg_start, dates[-1], alpha=0.12, color=color_map.get(prev))
+
+    # add vertical line for asof date
+    try:
+        asof_dt = pd.to_datetime(reg_now.get("asof"))
+        ax.axvline(asof_dt, color="#333333", linestyle="--", linewidth=1)
+        ax.text(
+            asof_dt,
+            ax.get_ylim()[1],
+            f" asof {asof_dt.date().isoformat()}",
+            va="top",
+            ha="left",
+            fontsize=8,
+            color="#333333",
+        )
+    except Exception:
+        pass
+
+    # title and concise subtitle
+    ax.set_title("GLD (Adj Close) — last 12 months", fontsize=12, weight="bold")
+    subtitle = f"Current regime: USD {reg_now['usd']} | Rates {reg_now['rates']} | Risk {reg_now['risk']} (asof {reg_now['asof']})"
+    ax.text(0.01, 0.96, subtitle, transform=ax.transAxes, fontsize=9, va="top")
+
+    # optional small textbox with expected impact
+    if expected_impact:
+        tb_text = f"Impact: {expected_impact}"
+        ax.text(
+            0.99,
+            0.02,
+            tb_text,
+            transform=ax.transAxes,
+            fontsize=9,
+            va="bottom",
+            ha="right",
+            bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.7, edgecolor="#dddddd"),
+        )
+
+    # y-axis grid only
+    ax.yaxis.grid(True, linestyle="--", linewidth=0.5, color="#999999", alpha=0.4)
+    ax.xaxis.grid(False)
+
+    # format y-axis as dollars with 0 decimals
+    try:
+        from matplotlib.ticker import FuncFormatter
+
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"${x:,.0f}"))
+    except Exception:
+        pass
+
+    # legend: create patches for each regime (compact)
+    import matplotlib.patches as mpatches
+
+    patches = [mpatches.Patch(color=color_map[r], label=r.replace("_", " ")) for r in unique_regimes]
+    # place legend below plot in two rows if too many
+    ncol = 4 if len(patches) > 4 else len(patches)
+    ax.legend(handles=patches, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=ncol, fontsize=9)
 
     ax.set_title(
         f"GLD Adj Close (12 months) with weekly regime bands | current={reg_now['usd']}_{reg_now['rates']}_{reg_now['risk']}"
@@ -478,7 +545,11 @@ def main(cfg: Config = CFG) -> None:
     }
 
     chart_meta = save_gold_12m_regime_chart(
-        px_daily=px_daily, weekly_regimes=weekly_regimes, reg_now=reg_now, cfg=cfg
+        px_daily=px_daily,
+        weekly_regimes=weekly_regimes,
+        reg_now=reg_now,
+        cfg=cfg,
+        expected_impact=impact,
     )
 
     latest_payload = {

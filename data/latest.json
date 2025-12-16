@@ -17,10 +17,10 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.18011535782116045,
-    "corr_GLD_IEF": 0.017900712167864572,
-    "corr_GLD_SPY": 0.16787267051616112,
-    "corr_GLD_VIX": -0.05131249505566695
+    "corr_GLD_UUP": -0.1803088237431108,
+    "corr_GLD_IEF": 0.01774600716040642,
+    "corr_GLD_SPY": 0.1680178059889155,
+    "corr_GLD_VIX": -0.050878787687600374
   },
   "stats_in_regime_display": {
     "avg_weekly_return": "-0.10%",
