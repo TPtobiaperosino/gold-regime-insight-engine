@@ -7,7 +7,7 @@
   },
   "signals": {
     "mom_usd_12w": 0.01895736244908286,
-    "mom_rates_12w": 0.004601409331009165,
+    "mom_rates_12w": 0.004601329283528299,
     "vix_level": 15.739999771118164,
     "vix_threshold": 19.22749948501587
   },
@@ -17,10 +17,10 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.1805561954060031,
-    "corr_GLD_IEF": 0.018642220438289298,
-    "corr_GLD_SPY": 0.16746078719249027,
-    "corr_GLD_VIX": -0.05100666248270021
+    "corr_GLD_UUP": -0.18304056575367728,
+    "corr_GLD_IEF": 0.01890741047863346,
+    "corr_GLD_SPY": 0.16759036824896525,
+    "corr_GLD_VIX": -0.05171925752369698
   },
   "stats_in_regime_display": {
     "avg_weekly_return": "-0.10%",
@@ -32,9 +32,9 @@
     "corr_GLD_SPY": "0.17",
     "corr_GLD_VIX": "-0.05"
   },
-  "price_chart_12m": {
-    "png_path": "data/gold_12m_regimes.png",
-    "json_path": "data/gold_12m_regimes.json"
+  "charts": {
+    "gld_vs_usd_12m": {"png_path": "data/gld_vs_usd_12m.png", "json_path": "data/gld_vs_usd_12m.json"},
+    "gld_vs_10y_12m": {"png_path": "data/gld_vs_10y_12m.png", "json_path": "data/gld_vs_10y_12m.json"}
   },
   "insights": [
     {

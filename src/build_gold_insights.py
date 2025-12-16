@@ -5,8 +5,10 @@ Output:
 - data/latest.json              -> asof + regime corrente + expected impact + insight cards
 - data/regimes.json             -> tabella 8 combinazioni regime con stats storiche
 - data/rolling_corr.json        -> rolling corr (60 giorni) oro vs driver (USD, rates, SPY, VIX)
-- data/gld_vs_usd_12m.png        -> GLD vs USD (UUP) normalized (base=100), last 12 months
-- data/gld_vs_usd_12m.json       -> series for the GLD vs UUP normalized chart
+- data/gld_vs_usd_12m.png        -> GLD vs USD (UUP), last 12 months (dual-axis)
+- data/gld_vs_usd_12m.json       -> series for the GLD vs USD chart
+- data/gld_vs_10y_12m.png        -> GLD vs 10Y yield (from ^TNX, tnx/10 -> %), last 12 months (dual-axis)
+- data/gld_vs_10y_12m.json       -> series for the GLD vs 10Y chart
 """
 
 from __future__ import annotations
@@ -45,11 +47,8 @@ class Config:
 
     gld_vs_usd_png_path: str = "data/gld_vs_usd_12m.png"
     gld_vs_usd_json_path: str = "data/gld_vs_usd_12m.json"
-    scatter_png_path: str = "data/scatter_gold_vs_yield.png"
-    scatter_json_path: str = "data/scatter_gold_vs_yield.json"
-
-    rolling_corr_12m_png_path: str = "data/rolling_corr_12m.png"
-    rolling_corr_12m_json_path: str = "data/rolling_corr_12m.json"
+    gld_vs_teny_png_path: str = "data/gld_vs_10y_12m.png"
+    gld_vs_teny_json_path: str = "data/gld_vs_10y_12m.json"
 
 
 CFG = Config()
@@ -491,214 +490,86 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
     return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
 
-def build_scatter_gold_yield_risk(px_daily: pd.DataFrame, cfg: Config) -> pd.DataFrame:
-    """Build weekly scatter dataset: weekly GLD return vs weekly Δ10Y (bps) and risk appetite bands."""
-    px_weekly = to_weekly_prices(px_daily)
+def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
+    """Save GLD and 10Y yield (from ^TNX) as a dual-axis chart (last 12 months).
 
-    if cfg.teny not in px_weekly.columns:
-        raise RuntimeError(f"Missing tenor ticker {cfg.teny} in weekly prices")
-
-    # weekly GLD returns (decimal)
-    gld_ret = px_weekly[cfg.gold].pct_change()
-
-    # 10y yield series: ^TNX typically reports yield*10, so divide by 10 to get percent
-    y10 = px_weekly[cfg.teny] / 10.0
-    dy10_bps = (y10 - y10.shift(1)) * 100.0
-
-    vix = px_weekly[cfg.vix]
-    q33 = vix.rolling(cfg.vix_lookback_weeks).quantile(1 / 3)
-    q66 = vix.rolling(cfg.vix_lookback_weeks).quantile(2 / 3)
-    global_q33 = vix.quantile(1 / 3)
-    global_q66 = vix.quantile(2 / 3)
-
-    idx = gld_ret.index.intersection(dy10_bps.index).intersection(vix.index)
-
-    thr33 = q33.reindex(idx).fillna(global_q33)
-    thr66 = q66.reindex(idx).fillna(global_q66)
-
-    vix_loc = vix.reindex(idx)
-
-    risk_app = np.where(
-        vix_loc <= thr33, "High risk appetite", np.where(vix_loc <= thr66, "Medium risk appetite", "Low risk appetite")
-    )
-
-    df = pd.DataFrame(
-        {
-            "gld_ret": gld_ret.reindex(idx),
-            "dy10_bps": dy10_bps.reindex(idx),
-            "risk_appetite": risk_app,
-        },
-        index=idx,
-    )
-
-    df = df.dropna()
-
-    return df
-
-
-def save_scatter_gold_vs_yield(df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
-    """Save simplified binned relationship: binned mean GLD weekly return vs dy10_bps plus linear fit."""
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    Path(cfg.scatter_png_path).parent.mkdir(parents=True, exist_ok=True)
-
-    n_bins = 20
-    df2 = df.reset_index()
-    if df2.empty:
-        payload = {"type": "binned_line", "x": "dy10_bps", "y": "avg_gld_weekly_return", "fit": {}, "points": []}
-        write_json(cfg.scatter_json_path, payload)
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.set_title("Gold weekly return vs Δ10Y yield (bps) — binned averages")
-        fig.tight_layout()
-        fig.savefig(cfg.scatter_png_path, dpi=180)
-        plt.close(fig)
-        return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
-
-    # create fixed bins over full range
-    try:
-        bins = pd.cut(df2["dy10_bps"], bins=n_bins)
-    except Exception:
-        bins = pd.qcut(df2["dy10_bps"].rank(method="first"), q=n_bins)
-
-    agg = df2.groupby(bins).agg(x_center=("dy10_bps", "mean"), y_mean=("gld_ret", "mean"), n=("gld_ret", "count")).reset_index()
-    agg = agg.dropna()
-    # drop small bins
-    agg = agg[agg["n"] >= 10].sort_values("x_center")
-
-    points = [{"x": float(r["x_center"]), "y": float(r["y_mean"]), "n": int(r["n"])} for _, r in agg.iterrows()]
-
-    # Fit linear model on binned means (y in percent) using numpy.polyfit
-    fit = {}
-    if len(agg) >= 2:
-        x_vals = agg["x_center"].values
-        y_pct = (agg["y_mean"].values * 100.0)
-        coef = np.polyfit(x_vals, y_pct, 1)
-        slope = float(coef[0])
-        intercept = float(coef[1])
-        y_hat = np.polyval(coef, x_vals)
-        ss_res = float(((y_pct - y_hat) ** 2).sum())
-        ss_tot = float(((y_pct - y_pct.mean()) ** 2).sum())
-        r2 = float(1 - ss_res / ss_tot) if ss_tot > 0 else float("nan")
-        fit = {"slope": slope, "intercept": intercept, "r2": r2}
-    else:
-        fit = {"slope": None, "intercept": None, "r2": None}
-
-    payload = {"type": "binned_line", "x": "dy10_bps", "y": "avg_gld_weekly_return", "fit": fit, "points": points}
-    write_json(cfg.scatter_json_path, payload)
-
-    # Plotting
-    fig, ax = plt.subplots(figsize=(8, 5))
-    if not agg.empty:
-        ax.plot(agg["x_center"], agg["y_mean"] * 100.0, marker="o", linestyle="-", color="#1b6ca8", linewidth=1.6, markersize=6, label="Binned avg")
-        if fit.get("slope") is not None:
-            x_vals = np.linspace(agg["x_center"].min(), agg["x_center"].max(), 100)
-            y_fit = fit["slope"] * x_vals + fit["intercept"]
-            ax.plot(x_vals, y_fit, linestyle="--", color="#d35400", linewidth=1.2, label="Linear fit")
-            # annotation with slope and r2
-            ann = f"slope={fit['slope']:.4f}%/bp\nr2={fit['r2']:.2f}"
-            fig.text(0.99, 0.02, ann, ha="right", va="bottom", fontsize=9, bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"))
-
-    ax.set_xlabel("Δ 10Y yield (bps, weekly)")
-    ax.set_ylabel("Avg GLD weekly return (%)")
-    ax.set_title("Gold weekly return vs Δ10Y yield (bps) — binned averages")
-    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
-
-    # small legend
-    ax.legend(loc="upper right", fontsize=9)
-    fig.tight_layout()
-    fig.savefig(cfg.scatter_png_path, dpi=180)
-    plt.close(fig)
-
-    return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
-
-
-def save_rolling_corr_12m_chart(corr_df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
-    """Save rolling 60d correlations (last 12 months) chart and a JSON snapshot."""
+    TNX is typically reported as yield*10; convert to percent with `tnx / 10`.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    end = corr_df.index.max()
+    end = px_daily.index.max()
     start = end - pd.DateOffset(years=1)
 
-    sub = corr_df.loc[corr_df.index >= start].copy()
+    gld = px_daily.loc[px_daily.index >= start, cfg.gold].dropna()
+    tnx = px_daily.loc[px_daily.index >= start, cfg.teny].dropna()
 
-    # columns of interest if present
-    cols = []
-    mapping = {
-        f"corr_{cfg.gold}_{cfg.usd}": "corr_GLD_UUP",
-        f"corr_{cfg.gold}_{cfg.rates}": "corr_GLD_IEF",
-        f"corr_{cfg.gold}_{cfg.equity}": "corr_GLD_SPY",
-        f"corr_{cfg.gold}_VIX": "corr_GLD_VIX",
-    }
-    for k in [f"corr_{cfg.gold}_{cfg.usd}", f"corr_{cfg.gold}_{cfg.rates}", f"corr_{cfg.gold}_{cfg.equity}", f"corr_{cfg.gold}_VIX"]:
-        if k in sub.columns:
-            cols.append(k)
+    common_idx = gld.index.intersection(tnx.index)
+    gld = gld.reindex(common_idx).dropna()
+    tnx = tnx.reindex(common_idx).dropna()
 
-    if not cols:
-        # no series to plot
-        Path(cfg.rolling_corr_12m_png_path).parent.mkdir(parents=True, exist_ok=True)
-        fig, ax = plt.subplots(figsize=(10, 4))
-        ax.set_title("Rolling correlation (60d) — last 12 months")
+    if gld.empty or tnx.empty:
+        Path(cfg.gld_vs_teny_png_path).parent.mkdir(parents=True, exist_ok=True)
+        fig, ax = plt.subplots(figsize=(10, 4.6))
+        ax.set_title("GLD vs 10Y yield — last 12 months (dual-axis)")
         fig.tight_layout()
-        fig.savefig(cfg.rolling_corr_12m_png_path, dpi=180)
+        fig.savefig(cfg.gld_vs_teny_png_path, dpi=180)
         plt.close(fig)
-        write_json(cfg.rolling_corr_12m_json_path, {"window_days": cfg.rolling_corr_days, "series": [], "latest": {}})
-        return {"png_path": cfg.rolling_corr_12m_png_path, "json_path": cfg.rolling_corr_12m_json_path}
+        write_json(cfg.gld_vs_teny_json_path, {"series": []})
+        return {"png_path": cfg.gld_vs_teny_png_path, "json_path": cfg.gld_vs_teny_json_path}
 
-    # prepare JSON series
-    series = []
-    for dt, row in sub.iterrows():
-        rec = {"date": dt.date().isoformat()}
-        for c in cols:
-            rec[c] = None if not np.isfinite(row.get(c, np.nan)) else float(row[c])
-        series.append(rec)
+    # convert TNX to yield percent
+    tny_pct = tnx / 10.0
 
-    # latest values (last non-all-NaN row)
-    latest_row = sub.dropna(how="all")[cols].iloc[-1] if not sub.dropna(how="all").empty else pd.Series({c: None for c in cols})
-    latest = {c: (None if not np.isfinite(latest_row.get(c, np.nan)) else float(latest_row[c])) for c in cols}
+    gld_color = "#1b6ca8"
+    tny_color = "#27ae60"
 
-    payload = {"window_days": cfg.rolling_corr_days, "series": series, "latest": latest}
-    write_json(cfg.rolling_corr_12m_json_path, payload)
-
-    # Plotting
-    fig, ax = plt.subplots(figsize=(10, 4))
-    colors = {f"corr_{cfg.gold}_{cfg.usd}": "#1b6ca8", f"corr_{cfg.gold}_{cfg.rates}": "#d35400", f"corr_{cfg.gold}_{cfg.equity}": "#2ecc71", f"corr_{cfg.gold}_VIX": "#8e44ad"}
-
-    for c in cols:
-        ax.plot(sub.index, sub[c], label=mapping.get(c, c), color=colors.get(c, None), linewidth=1.4)
-
-    ax.set_ylim(-1.0, 1.0)
-    ax.axhline(0.0, color="#444444", linewidth=0.8, linestyle="--", alpha=0.6)
-    ax.set_title("Rolling correlation (60d) — last 12 months", fontsize=12, weight="bold")
-    ax.set_ylabel("Correlation")
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    ax.plot(gld.index, gld.values, label="GLD ($, left axis)", color=gld_color, linewidth=1.8)
     ax.set_xlabel("Date")
+    ax.set_ylabel("GLD ($)", color=gld_color)
+    ax.tick_params(axis="y", colors=gld_color)
+    for tl in ax.get_yticklabels():
+        tl.set_color(gld_color)
 
-    # latest annotation box top-right
-    ann_items = []
-    label_map = {f"corr_{cfg.gold}_{cfg.usd}": "UUP", f"corr_{cfg.gold}_{cfg.rates}": "IEF", f"corr_{cfg.gold}_{cfg.equity}": "SPY"}
-    for c in [f"corr_{cfg.gold}_{cfg.usd}", f"corr_{cfg.gold}_{cfg.rates}", f"corr_{cfg.gold}_{cfg.equity}"]:
-        if c in latest:
-            val = latest[c]
-            if val is None:
-                s = f"{label_map.get(c, c)}=N/A"
-            else:
-                s = f"{label_map.get(c, c)}={val:.2f}"
-            ann_items.append(s)
-
-    ann_text = " | ".join(ann_items)
-    fig.text(0.99, 0.98, f"Latest: {ann_text}", ha="right", va="top", fontsize=9, bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"))
-
-    ax.legend(loc="upper left", fontsize=9)
     ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
 
-    fig.tight_layout()
-    Path(cfg.rolling_corr_12m_png_path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(cfg.rolling_corr_12m_png_path, dpi=180)
+    ax2 = ax.twinx()
+    ax2.plot(tny_pct.index, tny_pct.values, label="10Y yield (%), right axis", color=tny_color, linewidth=1.6)
+    ax2.set_ylabel("10Y yield (%)", color=tny_color)
+    ax2.tick_params(axis="y", colors=tny_color)
+    for tl in ax2.get_yticklabels():
+        tl.set_color(tny_color)
+
+    ax.set_title("GLD vs 10Y yield — last 12 months (dual-axis)", fontsize=12, weight="bold")
+
+    # combined legend below the plot
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2, frameon=True, fontsize=9)
+
+    fig.tight_layout(rect=[0, 0.14, 1, 0.92])
+
+    Path(cfg.gld_vs_teny_png_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(cfg.gld_vs_teny_png_path, dpi=180)
     plt.close(fig)
 
-    return {"png_path": cfg.rolling_corr_12m_png_path, "json_path": cfg.rolling_corr_12m_json_path}
+    df_out = pd.DataFrame(
+        {
+            "date": gld.index.date.astype(str),
+            "gld": gld.values.astype(float),
+            "teny_yield_pct": tny_pct.values.astype(float),
+        }
+    )
+    write_json(cfg.gld_vs_teny_json_path, {"series": df_out.to_dict(orient="records")})
+
+    return {"png_path": cfg.gld_vs_teny_png_path, "json_path": cfg.gld_vs_teny_json_path}
+
+
+
+
+
 
 
 def main(cfg: Config = CFG) -> None:
@@ -720,15 +591,9 @@ def main(cfg: Config = CFG) -> None:
     )
     corr_df = corr_df.rename(columns={f"corr_{cfg.gold}_{cfg.vix}": f"corr_{cfg.gold}_VIX"})
 
-    # rolling corr 12m chart
-    rolling_corr_meta = save_rolling_corr_12m_chart(corr_df=corr_df, cfg=cfg)
-
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
     weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
 
-    # scatter dataset: prepare weekly GLD return vs Δ10Y (bps)
-    df_scatter = build_scatter_gold_yield_risk(px_daily=px_daily, cfg=cfg)
-    scatter_meta = save_scatter_gold_vs_yield(df_scatter, cfg)
     regime_table = build_regime_table(px_weekly=px_weekly, weekly_ret=ret_weekly, cfg=cfg)
     impact, stats_in_regime = expected_impact_from_table(
         regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
@@ -757,6 +622,7 @@ def main(cfg: Config = CFG) -> None:
     }
 
     chart_meta = save_gld_vs_usd_12m_chart(px_daily=px_daily, cfg=cfg)
+    teny_meta = save_gld_vs_teny_12m_chart(px_daily=px_daily, cfg=cfg)
 
     latest_payload = {
         "asof": reg_now["asof"],
@@ -772,9 +638,10 @@ def main(cfg: Config = CFG) -> None:
         "rolling_corr_60d_latest": corr_latest,
         "stats_in_regime_display": stats_in_regime_display,
         "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
-        "gld_vs_usd_chart_12m": chart_meta,
-        "scatter_gold_vs_yield": scatter_meta,
-        "rolling_corr_chart_12m": rolling_corr_meta,
+        "charts": {
+            "gld_vs_usd_12m": chart_meta,
+            "gld_vs_10y_12m": teny_meta,
+        },
         "insights": insights,
     }
 
@@ -803,8 +670,8 @@ def main(cfg: Config = CFG) -> None:
     print(f" - {cfg.rolling_corr_path}")
     print(f" - {cfg.gld_vs_usd_png_path}")
     print(f" - {cfg.gld_vs_usd_json_path}")
-    print(f" - {cfg.scatter_png_path}")
-    print(f" - {cfg.scatter_json_path}")
+    print(f" - {cfg.gld_vs_teny_png_path}")
+    print(f" - {cfg.gld_vs_teny_json_path}")
 
 
 if __name__ == "__main__":
