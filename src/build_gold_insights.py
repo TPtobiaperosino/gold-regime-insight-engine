@@ -30,6 +30,7 @@ class Config:
     rates: str = "IEF"
     equity: str = "SPY"
     vix: str = "^VIX"
+    teny: str = "^TNX"
 
     momentum_weeks: int = 12
     vix_lookback_weeks: int = 104
@@ -44,6 +45,8 @@ class Config:
 
     gld_vs_usd_png_path: str = "data/gld_vs_usd_12m.png"
     gld_vs_usd_json_path: str = "data/gld_vs_usd_12m.json"
+    scatter_png_path: str = "data/scatter_gold_vs_yield_risk.png"
+    scatter_json_path: str = "data/scatter_gold_vs_yield_risk.json"
 
 
 CFG = Config()
@@ -485,8 +488,103 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
     return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
 
+def build_scatter_gold_yield_risk(px_daily: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Build weekly scatter dataset: weekly GLD return vs weekly Δ10Y (bps) and risk appetite bands."""
+    px_weekly = to_weekly_prices(px_daily)
+
+    if cfg.teny not in px_weekly.columns:
+        raise RuntimeError(f"Missing tenor ticker {cfg.teny} in weekly prices")
+
+    # weekly GLD returns (decimal)
+    gld_ret = px_weekly[cfg.gold].pct_change()
+
+    # 10y yield series: ^TNX typically reports yield*10, so divide by 10 to get percent
+    y10 = px_weekly[cfg.teny] / 10.0
+    dy10_bps = (y10 - y10.shift(1)) * 100.0
+
+    vix = px_weekly[cfg.vix]
+    q33 = vix.rolling(cfg.vix_lookback_weeks).quantile(1 / 3)
+    q66 = vix.rolling(cfg.vix_lookback_weeks).quantile(2 / 3)
+    global_q33 = vix.quantile(1 / 3)
+    global_q66 = vix.quantile(2 / 3)
+
+    idx = gld_ret.index.intersection(dy10_bps.index).intersection(vix.index)
+
+    thr33 = q33.reindex(idx).fillna(global_q33)
+    thr66 = q66.reindex(idx).fillna(global_q66)
+
+    vix_loc = vix.reindex(idx)
+
+    risk_app = np.where(
+        vix_loc <= thr33, "High risk appetite", np.where(vix_loc <= thr66, "Medium risk appetite", "Low risk appetite")
+    )
+
+    df = pd.DataFrame(
+        {
+            "gld_ret": gld_ret.reindex(idx),
+            "dy10_bps": dy10_bps.reindex(idx),
+            "risk_appetite": risk_app,
+        },
+        index=idx,
+    )
+
+    df = df.dropna()
+
+    return df
+
+
+def save_scatter_gold_yield_risk(df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
+    """Save scatter plot and JSON for GLD weekly return vs Δ10Y yield in bps colored by risk appetite."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
+
+    Path(cfg.scatter_png_path).parent.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    colors = {
+        "High risk appetite": "#2ecc71",
+        "Medium risk appetite": "#f1c40f",
+        "Low risk appetite": "#e74c3c",
+    }
+
+    for label, group in df.groupby("risk_appetite"):
+        ax.scatter(group["dy10_bps"].values, group["gld_ret"].values * 100.0, label=label, color=colors.get(label), alpha=0.85, s=20)
+
+    ax.set_xlabel("Δ 10Y yield (bps, weekly)")
+    ax.set_ylabel("GLD weekly return (%)")
+    ax.set_title("Gold weekly return vs Δ10Y yield (bps), colored by risk appetite")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
+
+    # legend with title
+    patches = [mpatches.Patch(color=colors[k], label=k) for k in ["High risk appetite", "Medium risk appetite", "Low risk appetite"]]
+    ax.legend(handles=patches, title="Risk appetite", loc="upper right", fontsize=9)
+
+    fig.tight_layout()
+    fig.savefig(cfg.scatter_png_path, dpi=180)
+    plt.close(fig)
+
+    # JSON for Lovable
+    points = []
+    for dt, row in df.iterrows():
+        points.append({"date": dt.date().isoformat(), "dy10_bps": float(row["dy10_bps"]), "gld_ret": float(row["gld_ret"]), "risk_appetite": str(row["risk_appetite"])})
+
+    payload = {
+        "x": "dy10_bps",
+        "y": "gld_weekly_return",
+        "color": "risk_appetite",
+        "points": points,
+    }
+
+    write_json(cfg.scatter_json_path, payload)
+
+    return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
+
+
 def main(cfg: Config = CFG) -> None:
-    tickers = [cfg.gold, cfg.usd, cfg.rates, cfg.equity, cfg.vix]
+    tickers = [cfg.gold, cfg.usd, cfg.rates, cfg.equity, cfg.vix, cfg.teny]
 
     px_daily = download_prices(tickers=tickers, period=cfg.history_period)
     px_daily = align_and_clean(px_daily)
@@ -507,6 +605,9 @@ def main(cfg: Config = CFG) -> None:
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
     weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
 
+    # scatter dataset: gold weekly return vs Δ10Y yield (bps) colored by risk appetite
+    df_scatter = build_scatter_gold_yield_risk(px_daily=px_daily, cfg=cfg)
+    scatter_meta = save_scatter_gold_yield_risk(df_scatter, cfg)
     regime_table = build_regime_table(px_weekly=px_weekly, weekly_ret=ret_weekly, cfg=cfg)
     impact, stats_in_regime = expected_impact_from_table(
         regime_table, reg_now["usd"], reg_now["rates"], reg_now["risk"]
@@ -551,6 +652,7 @@ def main(cfg: Config = CFG) -> None:
         "stats_in_regime_display": stats_in_regime_display,
         "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
         "gld_vs_usd_chart_12m": chart_meta,
+        "scatter_gold_vs_yield_risk": scatter_meta,
         "insights": insights,
     }
 
@@ -579,6 +681,8 @@ def main(cfg: Config = CFG) -> None:
     print(f" - {cfg.rolling_corr_path}")
     print(f" - {cfg.gld_vs_usd_png_path}")
     print(f" - {cfg.gld_vs_usd_json_path}")
+    print(f" - {cfg.scatter_png_path}")
+    print(f" - {cfg.scatter_json_path}")
 
 
 if __name__ == "__main__":
