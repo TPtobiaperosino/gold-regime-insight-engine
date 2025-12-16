@@ -451,13 +451,14 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
         bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"),
     )
 
-    # combined legend (merge handles from both axes) placed to the right of the plot (outside axes)
+    # combined legend (merge handles from both axes) placed below the x-axis label "Date"
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, frameon=True, fontsize=9)
+    # place legend centered below the plot (below the x-label)
+    ax.legend(h1 + h2, l1 + l2, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2, frameon=True, fontsize=9)
 
-    # leave some space on the right for the legend and at the top for the annotation
-    fig.tight_layout(rect=[0, 0, 0.8, 0.92])
+    # leave space at the bottom for the legend and at the top for the annotation
+    fig.tight_layout(rect=[0, 0.14, 1, 0.92])
 
     # save to primary configured path
     Path(cfg.gld_vs_usd_png_path).parent.mkdir(parents=True, exist_ok=True)
