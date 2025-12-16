@@ -5,6 +5,8 @@ Output:
 - data/latest.json         -> "oggi" (asof) + regime corrente + expected impact + insight cards
 - data/regimes.json        -> tabella delle 8 combinazioni regime con stats storiche
 - data/rolling_corr.json   -> time series rolling corr (60 giorni) oro vs driver (USD, rates, SPY, VIX)
+- data/value_curve.png     -> grafico "Gold Value Curve" (macro score -> avg weekly return)
+- data/value_curve.json    -> punti della curva (per chart in Lovable)
 
 Note concetti:
 - Adjusted Close: prezzo corretto per split/dividendi → returns più corretti
@@ -56,6 +58,10 @@ class Config:
     regimes_path: str = "data/regimes.json"
     rolling_corr_path: str = "data/rolling_corr.json"
 
+    # Gold value curve (macro score -> avg return)
+    value_curve_png_path: str = "data/value_curve.png"
+    value_curve_json_path: str = "data/value_curve.json"
+
 
 CFG = Config()
 
@@ -98,7 +104,6 @@ def download_prices(tickers: List[str], period: str, max_retries: int = 3) -> pd
                 px = df["Close"].copy()
             else:
                 # struttura alternativa: MultiIndex (Field, Ticker)
-                # prova a estrarre 'Adj Close' o 'Close'
                 if isinstance(df.columns, pd.MultiIndex):
                     fields = df.columns.get_level_values(0).unique().tolist()
                     if "Adj Close" in fields:
@@ -120,7 +125,7 @@ def download_prices(tickers: List[str], period: str, max_retries: int = 3) -> pd
 
             return px
 
-        except Exception as e:
+        except Exception:
             if attempt == max_retries:
                 raise
             # backoff leggero anti-rate-limit
@@ -141,7 +146,7 @@ def align_and_clean(px: pd.DataFrame) -> pd.DataFrame:
     """
     px = px.copy()
     px = px.dropna(how="all")
-    px = px.dropna()  # drop righe dove manca qualunque ticker (semplice + robusto)
+    px = px.dropna()  # drop righe dove manca qualunque ticker
     return px
 
 
@@ -156,6 +161,7 @@ def to_weekly_prices(px_daily: pd.DataFrame) -> pd.DataFrame:
         weekly = weekly.iloc[:-1]
     return weekly
 
+
 def pct_return(px: pd.DataFrame) -> pd.DataFrame:
     """Return percentuale: (P_t / P_{t-1}) - 1"""
     return px.pct_change().dropna()
@@ -165,8 +171,6 @@ def momentum(series_weekly_price: pd.Series, weeks: int) -> pd.Series:
     """
     Momentum semplice su prezzi weekly:
     momentum_t = P_t / P_{t-weeks} - 1
-
-    È spiegabile: "negli ultimi X settimane è salito/scese?"
     """
     return (series_weekly_price / series_weekly_price.shift(weeks) - 1).dropna()
 
@@ -174,8 +178,6 @@ def momentum(series_weekly_price: pd.Series, weeks: int) -> pd.Series:
 def rolling_corr(daily_returns: pd.DataFrame, target: str, drivers: List[str], window_days: int) -> pd.DataFrame:
     """
     Rolling correlation su daily returns (60 giorni).
-    Perché daily qui:
-    - la rolling corr serve proprio per vedere come cambia *nel breve/medio* la relazione.
     """
     out = pd.DataFrame(index=daily_returns.index)
     for d in drivers:
@@ -206,13 +208,11 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
 
     # VIX: usiamo livelli weekly, percentile lookback
     vix_lvl = px_weekly[cfg.vix].loc[common_idx].dropna()
-    # percentile rolling "lookback": threshold calcolato sulle ultime 104 settimane
-    # (rolling quantile), poi confronti sul punto corrente.
     vix_thr = vix_lvl.rolling(cfg.vix_lookback_weeks).quantile(cfg.vix_percentile)
     vix_flag = (vix_lvl > vix_thr).dropna()
 
-    # scegliamo l'ultima data dove abbiamo tutto
     last_dt = common_idx.max()
+
     # se VIX rolling non è ancora disponibile (dataset corto), fallback su quantile globale
     if last_dt not in vix_flag.index:
         global_thr = vix_lvl.quantile(cfg.vix_percentile)
@@ -246,28 +246,15 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
 def build_regime_table(px_weekly: pd.DataFrame, weekly_ret: pd.DataFrame, cfg: Config) -> pd.DataFrame:
     """
     Crea dataset regime per ogni settimana e calcola stats dell'oro nel tempo.
-
-    Regime per settimana t:
-    - usd_strong_t = momentum(UUP, 12w) > 0
-    - rates_up_t   = momentum(IEF, 12w) < 0
-    - risk_off_t   = VIX_t > rolling 75% quantile (104w)
-
-    Poi raggruppi per (usd, rates, risk) e calcoli:
-    - avg weekly gold return
-    - vol (std) weekly
-    - hit rate (% gold_ret > 0)
-    - n_obs
     """
     w = cfg.momentum_weeks
 
     mom_usd = momentum(px_weekly[cfg.usd], w)
     mom_rates = momentum(px_weekly[cfg.rates], w)
 
-    # VIX threshold rolling
     vix_lvl = px_weekly[cfg.vix].dropna()
     vix_thr = vix_lvl.rolling(cfg.vix_lookback_weeks).quantile(cfg.vix_percentile)
 
-    # Allineamento indice comune
     idx = weekly_ret.index.intersection(mom_usd.index).intersection(mom_rates.index).intersection(vix_lvl.index)
     df = pd.DataFrame(index=idx)
     df["gold_ret"] = weekly_ret.loc[idx, cfg.gold]
@@ -275,12 +262,10 @@ def build_regime_table(px_weekly: pd.DataFrame, weekly_ret: pd.DataFrame, cfg: C
     df["usd"] = np.where(mom_usd.loc[idx] > 0, "strong", "weak")
     df["rates"] = np.where(mom_rates.loc[idx] < 0, "up", "down")  # IEF down => yields up
 
-    # Se rolling threshold non disponibile in alcune date, fallback su quantile globale
     global_thr = vix_lvl.quantile(cfg.vix_percentile)
     thr = vix_thr.reindex(idx)
     df["risk"] = np.where(vix_lvl.loc[idx] > thr.fillna(global_thr), "off", "on")
 
-    # Stats per regime
     g = df.groupby(["usd", "rates", "risk"])
     table = g["gold_ret"].agg(
         avg_weekly_return="mean",
@@ -288,11 +273,9 @@ def build_regime_table(px_weekly: pd.DataFrame, weekly_ret: pd.DataFrame, cfg: C
         n_obs="count",
     ).reset_index()
 
-    # Hit rate: % settimane positive
     hit = g["gold_ret"].apply(lambda x: float((x > 0).mean())).reset_index(name="hit_rate")
     table = table.merge(hit, on=["usd", "rates", "risk"], how="left")
 
-    # per comodità: ordina
     table = table.sort_values(["risk", "usd", "rates"]).reset_index(drop=True)
     return table
 
@@ -304,7 +287,11 @@ def expected_impact_from_table(regime_table: pd.DataFrame, usd: str, rates: str,
 
     Regola: usa i tercili dell'avg_weekly_return.
     """
-    row = regime_table[(regime_table["usd"] == usd) & (regime_table["rates"] == rates) & (regime_table["risk"] == risk)]
+    row = regime_table[
+        (regime_table["usd"] == usd) &
+        (regime_table["rates"] == rates) &
+        (regime_table["risk"] == risk)
+    ]
     if row.empty:
         return "Neutral", {"avg_weekly_return": float("nan"), "hit_rate": float("nan")}
 
@@ -337,7 +324,7 @@ def generate_insights(
     Genera 3–6 insight testuali, ciascuno con evidenza numerica.
     Niente LLM: solo regole + numeri.
     """
-    insights = []
+    insights: List[Dict[str, object]] = []
 
     usd = regime_meta["usd"]
     rates = regime_meta["rates"]
@@ -345,14 +332,12 @@ def generate_insights(
 
     impact, stats = expected_impact_from_table(regime_table, usd, rates, risk)
 
-    # Insight 1: regime summary
     insights.append({
         "title": "Current macro regime",
         "evidence": f"USD={usd}, Rates={rates}, Risk={risk} (asof {regime_meta['asof']})",
         "metric": {"avg_weekly_return": stats["avg_weekly_return"], "hit_rate": stats["hit_rate"], "impact": impact},
     })
 
-    # Insight 2: USD pressure dominates (corr)
     c_usd = corr_latest.get("corr_GLD_UUP")
     if c_usd is not None and np.isfinite(c_usd) and c_usd < -0.40:
         insights.append({
@@ -361,7 +346,6 @@ def generate_insights(
             "metric": {"rolling_corr_60d": float(c_usd), "threshold": -0.40},
         })
 
-    # Insight 3: Rates sensitivity
     c_rates = corr_latest.get("corr_GLD_IEF")
     if c_rates is not None and np.isfinite(c_rates) and c_rates > 0.30:
         insights.append({
@@ -370,7 +354,6 @@ def generate_insights(
             "metric": {"rolling_corr_60d": float(c_rates), "threshold": 0.30},
         })
 
-    # Insight 4: regime historically unfavorable
     avg_all = regime_table["avg_weekly_return"]
     if np.isfinite(stats["avg_weekly_return"]):
         bottom_quartile = float(avg_all.quantile(0.25))
@@ -381,7 +364,6 @@ def generate_insights(
                 "metric": {"avg_weekly_return": stats["avg_weekly_return"], "bottom_quartile": bottom_quartile},
             })
 
-    # Insight 5: low reliability
     if np.isfinite(stats["hit_rate"]) and stats["hit_rate"] < 0.50:
         insights.append({
             "title": "Low reliability in this regime",
@@ -389,7 +371,6 @@ def generate_insights(
             "metric": {"hit_rate": stats["hit_rate"], "threshold": 0.50},
         })
 
-    # Insight 6: crisis hedge check (risk-off + low hit)
     if risk == "off" and np.isfinite(stats["hit_rate"]) and stats["hit_rate"] < 0.55:
         insights.append({
             "title": "Not a consistent crisis hedge (in this sample)",
@@ -397,12 +378,119 @@ def generate_insights(
             "metric": {"hit_rate": stats["hit_rate"], "context": "risk=off"},
         })
 
-    # Limita a 6 per UI pulita
     return insights[:6]
 
 
 # -----------------------------
-# IO: JSON writing
+# 7) Gold Value Curve (macro score -> avg return)
+# -----------------------------
+
+def build_weekly_signal_frame(px_weekly: pd.DataFrame, weekly_ret: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """
+    Costruisce un DF weekly con:
+    - gold_ret
+    - regime labels (usd/rates/risk)
+    - tailwind_score in [-3, +3]
+    """
+    w = cfg.momentum_weeks
+
+    mom_usd = momentum(px_weekly[cfg.usd], w)
+    mom_rates = momentum(px_weekly[cfg.rates], w)
+
+    vix_lvl = px_weekly[cfg.vix].dropna()
+    vix_thr = vix_lvl.rolling(cfg.vix_lookback_weeks).quantile(cfg.vix_percentile)
+    global_thr = vix_lvl.quantile(cfg.vix_percentile)
+
+    idx = weekly_ret.index.intersection(mom_usd.index).intersection(mom_rates.index).intersection(vix_lvl.index)
+    df = pd.DataFrame(index=idx)
+
+    df["gold_ret"] = weekly_ret.loc[idx, cfg.gold]
+    df["usd"] = np.where(mom_usd.loc[idx] > 0, "strong", "weak")
+    df["rates"] = np.where(mom_rates.loc[idx] < 0, "up", "down")  # IEF down => yields up
+
+    thr = vix_thr.reindex(idx).fillna(global_thr)
+    df["risk"] = np.where(vix_lvl.loc[idx] > thr, "off", "on")
+
+    # Score: +1 = tailwind, -1 = headwind (definizione spiegabile)
+    df["score_usd"] = np.where(df["usd"] == "weak", 1, -1)
+    df["score_rates"] = np.where(df["rates"] == "down", 1, -1)
+    df["score_risk"] = np.where(df["risk"] == "off", 1, -1)
+    df["tailwind_score"] = df["score_usd"] + df["score_rates"] + df["score_risk"]
+
+    return df.dropna()
+
+
+def save_value_curve(df_weekly: pd.DataFrame, reg_now: Dict[str, object], cfg: Config) -> Dict[str, object]:
+    """
+    Salva:
+    - PNG (headless, per GitHub Actions)
+    - JSON points (per chart in Lovable)
+
+    Ritorna un dict con current_score + summary.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    g = df_weekly.groupby("tailwind_score")["gold_ret"]
+    curve = g.mean().sort_index()
+    hit = g.apply(lambda x: float((x > 0).mean())).reindex(curve.index)
+    nobs = g.count().reindex(curve.index)
+
+    score_now = (
+        (1 if reg_now["usd"] == "weak" else -1) +
+        (1 if reg_now["rates"] == "down" else -1) +
+        (1 if reg_now["risk"] == "off" else -1)
+    )
+
+    # Ensure dirs
+    Path(cfg.value_curve_png_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(cfg.value_curve_json_path).parent.mkdir(parents=True, exist_ok=True)
+
+    # PNG
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(curve.index, curve.values * 100, marker="o")
+    ax.axhline(0, linewidth=1)
+    ax.set_xlabel("Macro Tailwind Score (-3 headwind → +3 tailwind)")
+    ax.set_ylabel("Avg weekly GLD return (%)")
+    ax.set_title("Gold Value Curve: macro score → historical avg weekly return")
+
+    if score_now in curve.index:
+        ax.scatter([score_now], [float(curve.loc[score_now]) * 100], s=120)
+
+    fig.tight_layout()
+    fig.savefig(cfg.value_curve_png_path, dpi=180)
+    plt.close(fig)
+
+    # JSON
+    payload = {
+        "score_definition": {
+            "usd": {"weak": +1, "strong": -1},
+            "rates": {"down": +1, "up": -1},
+            "risk": {"off": +1, "on": -1},
+        },
+        "current_score": int(score_now),
+        "points": [
+            {
+                "score": int(s),
+                "avg_weekly_return": float(curve.loc[s]),
+                "hit_rate": float(hit.loc[s]),
+                "n_obs": int(nobs.loc[s]),
+            }
+            for s in curve.index
+        ],
+    }
+    write_json(cfg.value_curve_json_path, payload)
+
+    return {
+        "current_score": int(score_now),
+        "png_path": cfg.value_curve_png_path,
+        "json_path": cfg.value_curve_json_path,
+    }
+
+
+# -----------------------------
+# IO helpers
 # -----------------------------
 
 def write_json(path: str, payload: object) -> None:
@@ -410,11 +498,13 @@ def write_json(path: str, payload: object) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
+
 def _is_finite(x) -> bool:
     try:
         return x is not None and np.isfinite(x)
     except Exception:
         return False
+
 
 def fmt_pct(x: float, decimals: int = 1) -> str | None:
     """0.0042 -> '0.42%'"""
@@ -422,11 +512,13 @@ def fmt_pct(x: float, decimals: int = 1) -> str | None:
         return None
     return f"{x * 100:.{decimals}f}%"
 
+
 def fmt_num(x: float, decimals: int = 2) -> str | None:
     """-0.1849 -> '-0.18'"""
     if not _is_finite(x):
         return None
     return f"{x:.{decimals}f}"
+
 
 # -----------------------------
 # MAIN
@@ -453,6 +545,7 @@ def main(cfg: Config = CFG) -> None:
         window_days=cfg.rolling_corr_days,
     )
 
+    # standardizza key VIX
     corr_df = corr_df.rename(columns={f"corr_{cfg.gold}_{cfg.vix}": f"corr_{cfg.gold}_VIX"})
 
     # (4) Regime current
@@ -467,7 +560,6 @@ def main(cfg: Config = CFG) -> None:
 
     # Latest rolling correlations (ultimo punto disponibile)
     corr_last_row = corr_df.iloc[-1].to_dict()
-    # rinomina chiavi in modo più pulito
     corr_latest = {
         "corr_GLD_UUP": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.usd}", np.nan)),
         "corr_GLD_IEF": float(corr_last_row.get(f"corr_{cfg.gold}_{cfg.rates}", np.nan)),
@@ -478,6 +570,7 @@ def main(cfg: Config = CFG) -> None:
     # (6) Insights
     insights = generate_insights(reg_now, regime_table, corr_latest)
 
+    # Display fields (UI-friendly)
     stats_in_regime_display = {
         "avg_weekly_return": fmt_pct(stats_in_regime["avg_weekly_return"], 2),
         "hit_rate": fmt_pct(stats_in_regime["hit_rate"], 1),
@@ -489,6 +582,10 @@ def main(cfg: Config = CFG) -> None:
         "corr_GLD_SPY": fmt_num(corr_latest["corr_GLD_SPY"], 2),
         "corr_GLD_VIX": fmt_num(corr_latest["corr_GLD_VIX"], 2),
     }
+
+    # (7) Value curve outputs
+    weekly_df = build_weekly_signal_frame(px_weekly, ret_weekly, cfg)
+    value_curve_meta = save_value_curve(weekly_df, reg_now, cfg)
 
     # Build JSON payloads
     latest_payload = {
@@ -505,6 +602,7 @@ def main(cfg: Config = CFG) -> None:
         "rolling_corr_60d_latest": corr_latest,
         "stats_in_regime_display": stats_in_regime_display,
         "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
+        "value_curve": value_curve_meta,  # <— PNG + JSON + current_score
         "insights": insights,
     }
 
@@ -525,10 +623,12 @@ def main(cfg: Config = CFG) -> None:
     write_json(cfg.regimes_path, regimes_payload)
     write_json(cfg.rolling_corr_path, rolling_corr_payload)
 
-    print("✅ Updated JSONs:")
+    print("✅ Updated outputs:")
     print(f" - {cfg.latest_path}")
     print(f" - {cfg.regimes_path}")
     print(f" - {cfg.rolling_corr_path}")
+    print(f" - {cfg.value_curve_png_path}")
+    print(f" - {cfg.value_curve_json_path}")
 
 
 if __name__ == "__main__":
