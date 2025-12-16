@@ -48,6 +48,9 @@ class Config:
     scatter_png_path: str = "data/scatter_gold_vs_yield.png"
     scatter_json_path: str = "data/scatter_gold_vs_yield.json"
 
+    rolling_corr_12m_png_path: str = "data/rolling_corr_12m.png"
+    rolling_corr_12m_json_path: str = "data/rolling_corr_12m.json"
+
 
 CFG = Config()
 
@@ -610,6 +613,94 @@ def save_scatter_gold_vs_yield(df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     return {"png_path": cfg.scatter_png_path, "json_path": cfg.scatter_json_path}
 
 
+def save_rolling_corr_12m_chart(corr_df: pd.DataFrame, cfg: Config) -> Dict[str, str]:
+    """Save rolling 60d correlations (last 12 months) chart and a JSON snapshot."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    end = corr_df.index.max()
+    start = end - pd.DateOffset(years=1)
+
+    sub = corr_df.loc[corr_df.index >= start].copy()
+
+    # columns of interest if present
+    cols = []
+    mapping = {
+        f"corr_{cfg.gold}_{cfg.usd}": "corr_GLD_UUP",
+        f"corr_{cfg.gold}_{cfg.rates}": "corr_GLD_IEF",
+        f"corr_{cfg.gold}_{cfg.equity}": "corr_GLD_SPY",
+        f"corr_{cfg.gold}_VIX": "corr_GLD_VIX",
+    }
+    for k in [f"corr_{cfg.gold}_{cfg.usd}", f"corr_{cfg.gold}_{cfg.rates}", f"corr_{cfg.gold}_{cfg.equity}", f"corr_{cfg.gold}_VIX"]:
+        if k in sub.columns:
+            cols.append(k)
+
+    if not cols:
+        # no series to plot
+        Path(cfg.rolling_corr_12m_png_path).parent.mkdir(parents=True, exist_ok=True)
+        fig, ax = plt.subplots(figsize=(10, 4))
+        ax.set_title("Rolling correlation (60d) — last 12 months")
+        fig.tight_layout()
+        fig.savefig(cfg.rolling_corr_12m_png_path, dpi=180)
+        plt.close(fig)
+        write_json(cfg.rolling_corr_12m_json_path, {"window_days": cfg.rolling_corr_days, "series": [], "latest": {}})
+        return {"png_path": cfg.rolling_corr_12m_png_path, "json_path": cfg.rolling_corr_12m_json_path}
+
+    # prepare JSON series
+    series = []
+    for dt, row in sub.iterrows():
+        rec = {"date": dt.date().isoformat()}
+        for c in cols:
+            rec[c] = None if not np.isfinite(row.get(c, np.nan)) else float(row[c])
+        series.append(rec)
+
+    # latest values (last non-all-NaN row)
+    latest_row = sub.dropna(how="all")[cols].iloc[-1] if not sub.dropna(how="all").empty else pd.Series({c: None for c in cols})
+    latest = {c: (None if not np.isfinite(latest_row.get(c, np.nan)) else float(latest_row[c])) for c in cols}
+
+    payload = {"window_days": cfg.rolling_corr_days, "series": series, "latest": latest}
+    write_json(cfg.rolling_corr_12m_json_path, payload)
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(10, 4))
+    colors = {f"corr_{cfg.gold}_{cfg.usd}": "#1b6ca8", f"corr_{cfg.gold}_{cfg.rates}": "#d35400", f"corr_{cfg.gold}_{cfg.equity}": "#2ecc71", f"corr_{cfg.gold}_VIX": "#8e44ad"}
+
+    for c in cols:
+        ax.plot(sub.index, sub[c], label=mapping.get(c, c), color=colors.get(c, None), linewidth=1.4)
+
+    ax.set_ylim(-1.0, 1.0)
+    ax.axhline(0.0, color="#444444", linewidth=0.8, linestyle="--", alpha=0.6)
+    ax.set_title("Rolling correlation (60d) — last 12 months", fontsize=12, weight="bold")
+    ax.set_ylabel("Correlation")
+    ax.set_xlabel("Date")
+
+    # latest annotation box top-right
+    ann_items = []
+    label_map = {f"corr_{cfg.gold}_{cfg.usd}": "UUP", f"corr_{cfg.gold}_{cfg.rates}": "IEF", f"corr_{cfg.gold}_{cfg.equity}": "SPY"}
+    for c in [f"corr_{cfg.gold}_{cfg.usd}", f"corr_{cfg.gold}_{cfg.rates}", f"corr_{cfg.gold}_{cfg.equity}"]:
+        if c in latest:
+            val = latest[c]
+            if val is None:
+                s = f"{label_map.get(c, c)}=N/A"
+            else:
+                s = f"{label_map.get(c, c)}={val:.2f}"
+            ann_items.append(s)
+
+    ann_text = " | ".join(ann_items)
+    fig.text(0.99, 0.98, f"Latest: {ann_text}", ha="right", va="top", fontsize=9, bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"))
+
+    ax.legend(loc="upper left", fontsize=9)
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.18)
+
+    fig.tight_layout()
+    Path(cfg.rolling_corr_12m_png_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(cfg.rolling_corr_12m_png_path, dpi=180)
+    plt.close(fig)
+
+    return {"png_path": cfg.rolling_corr_12m_png_path, "json_path": cfg.rolling_corr_12m_json_path}
+
+
 def main(cfg: Config = CFG) -> None:
     tickers = [cfg.gold, cfg.usd, cfg.rates, cfg.equity, cfg.vix, cfg.teny]
 
@@ -628,6 +719,9 @@ def main(cfg: Config = CFG) -> None:
         window_days=cfg.rolling_corr_days,
     )
     corr_df = corr_df.rename(columns={f"corr_{cfg.gold}_{cfg.vix}": f"corr_{cfg.gold}_VIX"})
+
+    # rolling corr 12m chart
+    rolling_corr_meta = save_rolling_corr_12m_chart(corr_df=corr_df, cfg=cfg)
 
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
     weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
@@ -680,6 +774,7 @@ def main(cfg: Config = CFG) -> None:
         "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
         "gld_vs_usd_chart_12m": chart_meta,
         "scatter_gold_vs_yield": scatter_meta,
+        "rolling_corr_chart_12m": rolling_corr_meta,
         "insights": insights,
     }
 
