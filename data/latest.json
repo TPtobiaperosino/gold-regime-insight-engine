@@ -17,10 +17,10 @@
     "hit_rate": 0.48514851485148514
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.18304056575367728,
-    "corr_GLD_IEF": 0.01890741047863346,
-    "corr_GLD_SPY": 0.16759036824896525,
-    "corr_GLD_VIX": -0.05171925752369698
+    "corr_GLD_UUP": -0.18306674291480837,
+    "corr_GLD_IEF": 0.019294698996173483,
+    "corr_GLD_SPY": 0.1672167035429981,
+    "corr_GLD_VIX": -0.05106935140956713
   },
   "stats_in_regime_display": {
     "avg_weekly_return": "-0.10%",
@@ -33,8 +33,14 @@
     "corr_GLD_VIX": "-0.05"
   },
   "charts": {
-    "gld_vs_usd_12m": {"png_path": "data/gld_vs_usd_12m.png", "json_path": "data/gld_vs_usd_12m.json"},
-    "gld_vs_10y_12m": {"png_path": "data/gld_vs_10y_12m.png", "json_path": "data/gld_vs_10y_12m.json"}
+    "gld_vs_usd_12m": {
+      "png_path": "data/gld_vs_usd_12m.png",
+      "json_path": "data/gld_vs_usd_12m.json"
+    },
+    "gld_vs_10y_12m": {
+      "png_path": "data/gld_vs_10y_12m.png",
+      "json_path": "data/gld_vs_10y_12m.json"
+    }
   },
   "insights": [
     {

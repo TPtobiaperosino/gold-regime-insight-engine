@@ -418,43 +418,8 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
 
     ax.set_title("GLD vs USD (UUP) — last 12 months (dual-axis)", fontsize=12, weight="bold")
 
-    # Rolling 60d correlation of daily returns (proof)
-    try:
-        ret = px_daily.loc[common_idx, [cfg.gold, cfg.usd]].pct_change().dropna()
-        rolling_corr = ret[cfg.gold].rolling(60).corr(ret[cfg.usd])
-        rolling_corr_latest = rolling_corr.dropna().iloc[-1] if not rolling_corr.dropna().empty else float("nan")
-        corr_text = f"Rolling corr (60d) latest: {rolling_corr_latest:.2f}" if np.isfinite(rolling_corr_latest) else "Rolling corr (60d) latest: N/A"
-    except Exception:
-        rolling_corr = pd.Series(dtype=float)
-        rolling_corr_latest = float("nan")
-        corr_text = "Rolling corr (60d) latest: N/A"
+    # rolling correlation annotation and shading removed per request
 
-    # optional shading where rolling corr < -0.40 (very light)
-    try:
-        neg_mask = rolling_corr < -0.40
-        if neg_mask.any():
-            seg_start = None
-            for dt, flag in neg_mask.iteritems():
-                if flag and seg_start is None:
-                    seg_start = dt
-                elif not flag and seg_start is not None:
-                    ax.axvspan(seg_start, dt, color="#fdecea", alpha=0.06, linewidth=0)
-                    seg_start = None
-            if seg_start is not None:
-                ax.axvspan(seg_start, rolling_corr.index[-1], color="#fdecea", alpha=0.06, linewidth=0)
-    except Exception:
-        pass
-
-    # place rolling-corr label above the axes to avoid overlapping the lines
-    fig.text(
-        0.99,
-        0.985,
-        corr_text,
-        ha="right",
-        va="top",
-        fontsize=9,
-        bbox=dict(boxstyle="round", facecolor="#ffffff", alpha=0.8, edgecolor="#cccccc"),
-    )
 
     # combined legend (merge handles from both axes) placed below the x-axis label "Date"
     h1, l1 = ax.get_legend_handles_labels()
