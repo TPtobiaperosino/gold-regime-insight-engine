@@ -1,5 +1,6 @@
-pandas
-numpy
-matplotlib
-statsmodels
-yfinance
+numpy>=1.23
+pandas>=2.0
+matplotlib>=3.7
+yfinance>=0.2.33
+pandas_datareader>=0.10.0
+requests>=2.31

@@ -3,104 +3,85 @@
   "regime": {
     "usd": "strong",
     "rates": "down",
-    "risk": "high"
+    "risk_appetite": "medium"
   },
   "regime_snapshot": {
-    "label": "USD strong · Rates down · Risk appetite medium",
+    "png_path": "charts/regime_snapshot.png",
+    "json_path": "data/regime_snapshot.json"
+  },
+  "regime_snapshot_meta": {
+    "label": "USD strong · Bond prices up (IEF) · Risk appetite medium",
     "metrics": {
-      "usd_momentum_12w_pct": 1.9,
+      "usd_momentum_12w_pct": 0.78,
       "rates_momentum_12w_pct": 0.46,
-      "vix_percentile_104w": 45.2,
-      "vix_interpretation": "VIX at 45th percentile → risk appetite medium"
+      "vvix_percentile_104w": 57.7,
+      "vvix_interpretation": "VVIX at 58th percentile → risk appetite medium"
     }
   },
   "signals": {
-    "mom_usd_12w": 0.01895736244908286,
+    "mom_usd_12w": 0.007783717134179469,
     "mom_rates_12w": 0.004601329283528299,
-    "vix_level": 15.739999771118164,
-    "vix_threshold": 19.22749948501587
+    "vvix_level": 97.33000183105469,
+    "vvix_p40": 93.2000015258789,
+    "vvix_p70": 101.49099807739258,
+    "vvix_data_ok": true,
+    "vvix_reason": "ok"
   },
-  "expected_impact": "Headwind",
+  "expected_impact": "Neutral",
   "stats_in_regime": {
-    "avg_weekly_return": -0.0009569260917695352,
-    "hit_rate": 0.48514851485148514
+    "avg_weekly_return": 0.0010489448681223017,
+    "hit_rate": 0.5454545454545454
   },
   "rolling_corr_60d_latest": {
-    "corr_GLD_UUP": -0.1832023335455677,
-    "corr_GLD_IEF": 0.01854063068096096,
-    "corr_GLD_SPY": 0.1676095707509715,
-    "corr_GLD_VIX": -0.05141163195254335
+    "corr_GLD_DXY": -0.19333388595370565,
+    "corr_GLD_IEF": 0.01464736955281394,
+    "corr_GLD_SPY": 0.15671898912904322,
+    "corr_GLD_VIX": -0.04573593742869872
   },
   "stats_in_regime_display": {
-    "avg_weekly_return": "-0.10%",
-    "hit_rate": "48.5%"
+    "avg_weekly_return": "0.10%",
+    "hit_rate": "54.5%"
   },
   "rolling_corr_60d_latest_display": {
-    "corr_GLD_UUP": "-0.18",
-    "corr_GLD_IEF": "0.02",
-    "corr_GLD_SPY": "0.17",
+    "corr_GLD_DXY": "-0.19",
+    "corr_GLD_IEF": "0.01",
+    "corr_GLD_SPY": "0.16",
     "corr_GLD_VIX": "-0.05"
   },
   "charts": {
     "gld_vs_usd_12m": {
-      "png_path": "data/gld_vs_usd_12m.png",
+      "png_path": "charts/gld_vs_usd_12m.png",
       "json_path": "data/gld_vs_usd_12m.json"
     },
     "gld_vs_10y_12m": {
-      "png_path": "data/gld_vs_10y_12m.png",
+      "png_path": "charts/gld_vs_10y_12m.png",
       "json_path": "data/gld_vs_10y_12m.json"
+    },
+    "gld_spy_ratio_12m": {
+      "png_path": "charts/gld_spy_ratio_12m.png",
+      "json_path": "data/gld_spy_ratio_12m.json"
+    },
+    "gold_oil_ratio_12m": {
+      "png_path": "charts/gold_oil_ratio_12m.png",
+      "json_path": "data/gold_oil_ratio_12m.json"
+    },
+    "credit_risk_premium_20y": {
+      "png_path": "charts/credit_risk_premium_20y.png",
+      "json_path": "data/credit_risk_premium_20y.json"
+    },
+    "gold_value_trend_2005": {
+      "png_path": "charts/gold_value_trend_2005.png",
+      "json_path": "data/gold_value_trend_2005.json"
     }
-  },
-  "heatmap_summary": {
-    "current_cell": {
-      "usd": "strong",
-      "rates": "down",
-      "risk_appetite": "high",
-      "avg_weekly_return": -0.0009569260917695352,
-      "hit_rate": 0.48514851485148514,
-      "n_obs": 202,
-      "avg_weekly_return_display": "-0.10%",
-      "hit_rate_display": "48.5%"
-    },
-    "best_cell_by_avg_return": {
-      "usd": "weak",
-      "rates": "down",
-      "risk_appetite": "low",
-      "avg_weekly_return": 0.013214655528804192,
-      "hit_rate": 0.6951219512195121,
-      "n_obs": 82,
-      "avg_weekly_return_display": "1.32%",
-      "hit_rate_display": "69.5%"
-    },
-    "worst_cell_by_avg_return": {
-      "usd": "strong",
-      "rates": "up",
-      "risk_appetite": "low",
-      "avg_weekly_return": -0.001378574083006113,
-      "hit_rate": 0.46296296296296297,
-      "n_obs": 54,
-      "avg_weekly_return_display": "-0.14%",
-      "hit_rate_display": "46.3%"
-    },
-    "json_path": "data/regime_heatmap.json",
-    "png_path": null
   },
   "insights": [
     {
       "title": "Current macro regime",
-      "evidence": "USD=strong, Rates=down, Risk=high (asof 2025-12-12)",
+      "evidence": "USD=strong, Bond prices (IEF)=up, Risk appetite=medium (asof 2025-12-12)",
       "metric": {
-        "avg_weekly_return": -0.0009569260917695352,
-        "hit_rate": 0.48514851485148514,
-        "impact": "Headwind"
-      }
-    },
-    {
-      "title": "Low reliability in this regime",
-      "evidence": "Gold was positive in less than 50% of weeks in similar macro conditions.",
-      "metric": {
-        "hit_rate": 0.48514851485148514,
-        "threshold": 0.5
+        "avg_weekly_return": 0.0010489448681223017,
+        "hit_rate": 0.5454545454545454,
+        "impact": "Neutral"
       }
     }
   ]
