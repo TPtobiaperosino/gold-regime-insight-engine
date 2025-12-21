@@ -139,8 +139,8 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
             "asof": None,
             "usd": "unknown",
             "rates": "unknown",
-            "mom_usd_12w": float("nan"),
-            "mom_rates_12w": float("nan"),
+            "mom_usd_12w": None,
+            "mom_rates_12w": None,
         }
 
     usd_strong = bool(mom_usd.loc[last_dt] > 0)
@@ -189,25 +189,25 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     if last_dt in usd_s.index and (usd_s.index.get_loc(last_dt) - w) >= 0:
         usd_mom = float(usd_s.loc[last_dt] / usd_s.shift(w).loc[last_dt] - 1)
     else:
-        usd_mom = float("nan")
-    usd_label = "strong" if usd_mom > 0 else "weak"
+        usd_mom = None
+    usd_label = "strong" if (usd_mom is not None and usd_mom > 0) else ("weak" if usd_mom is not None else "unknown")
 
     rates_s = px_weekly[cfg.rates].dropna()
     if last_dt in rates_s.index and (rates_s.index.get_loc(last_dt) - w) >= 0:
         rates_mom = float(rates_s.loc[last_dt] / rates_s.shift(w).loc[last_dt] - 1)
     else:
-        rates_mom = float("nan")
-    rates_label = "up" if rates_mom < 0 else "down"
+        rates_mom = None
+    rates_label = "up" if (rates_mom is not None and rates_mom < 0) else ("down" if rates_mom is not None else "unknown")
 
     # cfg.rates is IEF (bond price). We keep the historical bucketing key as-is,
     # but present it as bond prices (inverse-to-yields).
-    bond_label = "down" if rates_label == "up" else "up"
+    bond_label = "down" if rates_label == "up" else ("up" if rates_label == "down" else "unknown")
 
     snapshot = {
         "label": f"USD {usd_label} · Bond prices {bond_label} (IEF)",
         "metrics": {
-            "usd_momentum_12w_pct": round(usd_mom * 100.0, 2) if np.isfinite(usd_mom) else None,
-            "rates_momentum_12w_pct": round(rates_mom * 100.0, 2) if np.isfinite(rates_mom) else None,
+            "usd_momentum_12w_pct": round(usd_mom * 100.0, 2) if usd_mom is not None and np.isfinite(usd_mom) else None,
+            "rates_momentum_12w_pct": round(rates_mom * 100.0, 2) if rates_mom is not None and np.isfinite(rates_mom) else None,
         },
     }
 
@@ -405,13 +405,16 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
 
     gld_current = float(gld.iloc[-1])
     dxy_current = float(dxy.iloc[-1])
-    gld_12m = float((gld.iloc[-1] / gld.iloc[0] - 1.0) * 100.0) if len(gld) > 1 and gld.iloc[0] != 0 else float("nan")
-    dxy_12m = float((dxy.iloc[-1] / dxy.iloc[0] - 1.0) * 100.0) if len(dxy) > 1 and dxy.iloc[0] != 0 else float("nan")
+    gld_12m = float((gld.iloc[-1] / gld.iloc[0] - 1.0) * 100.0) if len(gld) > 1 and gld.iloc[0] != 0 else None
+    dxy_12m = float((dxy.iloc[-1] / dxy.iloc[0] - 1.0) * 100.0) if len(dxy) > 1 and dxy.iloc[0] != 0 else None
     as_of = pd.to_datetime(common_idx.max()).date().isoformat()
+
+    gld_12m_txt = f"{gld_12m:.2f}%" if gld_12m is not None and np.isfinite(gld_12m) else "n/a"
+    dxy_12m_txt = f"{dxy_12m:.2f}%" if dxy_12m is not None and np.isfinite(dxy_12m) else "n/a"
 
     footnote = (
         f"Current GLD: {gld_current:.2f}  |  Current DXY: {dxy_current:.2f}  |  "
-        f"12m Δ GLD: {gld_12m:.2f}%  |  12m Δ DXY: {dxy_12m:.2f}%  |  "
+        f"12m Δ GLD: {gld_12m_txt}  |  12m Δ DXY: {dxy_12m_txt}  |  "
         f"As of {as_of}"
     )
     fig.text(0.5, 0.01, footnote, ha="center", va="bottom", fontsize=8, color="#555555")
@@ -502,13 +505,16 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
 
     gld_current = float(gld.iloc[-1])
     y10_current = float(tny_pct.iloc[-1])
-    gld_12m = float((gld.iloc[-1] / gld.iloc[0] - 1.0) * 100.0) if len(gld) > 1 and gld.iloc[0] != 0 else float("nan")
-    y10_12m_bps = float((tny_pct.iloc[-1] - tny_pct.iloc[0]) * 100.0) if len(tny_pct) > 1 else float("nan")
+    gld_12m = float((gld.iloc[-1] / gld.iloc[0] - 1.0) * 100.0) if len(gld) > 1 and gld.iloc[0] != 0 else None
+    y10_12m_bps = float((tny_pct.iloc[-1] - tny_pct.iloc[0]) * 100.0) if len(tny_pct) > 1 else None
     as_of = pd.to_datetime(common_idx.max()).date().isoformat()
+
+    gld_12m_txt = f"{gld_12m:.2f}%" if gld_12m is not None and np.isfinite(gld_12m) else "n/a"
+    y10_12m_txt = f"{y10_12m_bps:.0f} bps" if y10_12m_bps is not None and np.isfinite(y10_12m_bps) else "n/a"
 
     footnote = (
         f"Current GLD: {gld_current:.2f}  |  Current 10Y: {y10_current:.2f}%  |  "
-        f"12m Δ GLD: {gld_12m:.2f}%  |  12m Δ 10Y: {y10_12m_bps:.0f} bps  |  "
+        f"12m Δ GLD: {gld_12m_txt}  |  12m Δ 10Y: {y10_12m_txt}  |  "
         f"As of {as_of}"
     )
     fig.text(0.5, 0.01, footnote, ha="center", va="bottom", fontsize=8, color="#555555")
@@ -561,18 +567,18 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     def _pct(x: float, decimals: int = 1) -> str:
         try:
             if x is None or not np.isfinite(x):
-                return "NaN"
+                return "n/a"
             return f"{x * 100:.{decimals}f}%"
         except Exception:
-            return "NaN"
+            return "n/a"
 
     def _num(x: float, decimals: int = 2) -> str:
         try:
             if x is None or not np.isfinite(x):
-                return "NaN"
+                return "n/a"
             return f"{x:.{decimals}f}"
         except Exception:
-            return "NaN"
+            return "n/a"
 
     asof = px_daily.index.max() if not px_daily.empty else pd.Timestamp("1970-01-01")
 
@@ -592,21 +598,21 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     else:
         tnx_w = pd.Series(dtype=float)
 
-    def _mom_w(series: pd.Series, weeks: int) -> float:
+    def _mom_w(series: pd.Series, weeks: int) -> float | None:
         try:
             if series is None or series.empty or len(series) <= weeks:
-                return float("nan")
+                return None
             return float(series.iloc[-1] / series.shift(weeks).iloc[-1] - 1)
         except Exception:
-            return float("nan")
+            return None
 
-    def _yield_chg_bps(series: pd.Series, weeks: int) -> float:
+    def _yield_chg_bps(series: pd.Series, weeks: int) -> float | None:
         try:
             if series is None or series.empty or len(series) <= weeks:
-                return float("nan")
+                return None
             return float((series.iloc[-1] - series.shift(weeks).iloc[-1]) * 100)
         except Exception:
-            return float("nan")
+            return None
 
     dxy_mom_1w = _mom_w(dxy_w, 1)
     dxy_mom_4w = _mom_w(dxy_w, 4)
@@ -618,17 +624,25 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     y10_chg_12w_bps = _yield_chg_bps(tnx_w, 12)
     y10_chg_52w_bps = _yield_chg_bps(tnx_w, 52)
 
-    usd_regime = "USD strengthening" if np.isfinite(dxy_mom_12w) and dxy_mom_12w > 0 else "USD weakening"
-    y10_regime = "Yields rising" if np.isfinite(y10_chg_12w_bps) and y10_chg_12w_bps > 0 else "Yields falling"
+    usd_regime = (
+        "USD strengthening"
+        if dxy_mom_12w is not None and np.isfinite(dxy_mom_12w) and dxy_mom_12w > 0
+        else ("USD weakening" if dxy_mom_12w is not None and np.isfinite(dxy_mom_12w) else "USD unknown")
+    )
+    y10_regime = (
+        "Yields rising"
+        if y10_chg_12w_bps is not None and np.isfinite(y10_chg_12w_bps) and y10_chg_12w_bps > 0
+        else ("Yields falling" if y10_chg_12w_bps is not None and np.isfinite(y10_chg_12w_bps) else "Yields unknown")
+    )
     regime_str = f"{usd_regime} · {y10_regime}"
 
-    def _ret(series: pd.Series, days: int) -> float:
+    def _ret(series: pd.Series, days: int) -> float | None:
         try:
             if series is None or series.empty or len(series) <= days:
-                return float("nan")
+                return None
             return float(series.iloc[-1] / series.shift(days).iloc[-1] - 1)
         except Exception:
-            return float("nan")
+            return None
 
     gld_ret_1w = _ret(gld, 5)
     gld_ret_4w = _ret(gld, 21)
@@ -637,14 +651,23 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
 
     try:
         if gld is None or gld.empty:
-            gld_dd_12m = float("nan")
+            gld_dd_12m = None
         else:
             window = gld.iloc[-252:] if len(gld) >= 252 else gld
-            rolling_max = window.max() if not window.empty else np.nan
-            last_val = float(window.iloc[-1]) if not window.empty else np.nan
-            gld_dd_12m = float(last_val / rolling_max - 1) if np.isfinite(rolling_max) and np.isfinite(last_val) else float("nan")
+            rolling_max = float(window.max()) if not window.empty else None
+            last_val = float(window.iloc[-1]) if not window.empty else None
+            if (
+                rolling_max is None
+                or last_val is None
+                or (not np.isfinite(rolling_max))
+                or (not np.isfinite(last_val))
+                or rolling_max == 0
+            ):
+                gld_dd_12m = None
+            else:
+                gld_dd_12m = float(last_val / rolling_max - 1)
     except Exception:
-        gld_dd_12m = float("nan")
+        gld_dd_12m = None
 
     asof_str = asof.date().isoformat() if isinstance(asof, pd.Timestamp) else str(asof)
 
@@ -884,7 +907,7 @@ def plot_gold_oil_ratio_12m(cfg: Config = CFG) -> Dict[str, str] | None:
         current_ratio = float(ratio_12m.iloc[-1])
         pctile_12m = float((ratio_12m <= current_ratio).mean() * 100.0)
         high_12m = float(ratio_12m.max())
-        dd_from_high = (current_ratio / high_12m - 1.0) * 100.0 if high_12m != 0 else float("nan")
+        dd_from_high = (current_ratio / high_12m - 1.0) * 100.0 if high_12m != 0 else None
 
         lookback_days = 60
         if len(ratio_12m) > lookback_days:
@@ -1110,9 +1133,12 @@ def plot_gold_value_trend_2005(cfg: Config = CFG) -> Dict[str, str] | None:
     current_val = float(series.iloc[-1])
     start_val = float(series.iloc[0])
     years = max((series.index.max() - series.index.min()).days / 365.25, 0.0)
-    cagr = float((current_val / start_val) ** (1 / years) - 1) if years > 0 and start_val > 0 else float("nan")
+    cagr = float((current_val / start_val) ** (1 / years) - 1) if years > 0 and start_val > 0 else None
     peak = float(series.max())
-    dd = float((current_val / peak - 1) * 100.0) if peak > 0 else float("nan")
+    dd = float((current_val / peak - 1) * 100.0) if peak > 0 else None
+
+    cagr_txt = f"{cagr*100:.2f}%" if cagr is not None and np.isfinite(cagr) else "n/a"
+    dd_txt = f"{dd:.2f}%" if dd is not None and np.isfinite(dd) else "n/a"
 
     fig, ax = plt.subplots(figsize=(10, 4.6))
     ax.plot(series.index, series.values, color="#1b6ca8", linewidth=1.8, label="GLD")
@@ -1128,7 +1154,7 @@ def plot_gold_value_trend_2005(cfg: Config = CFG) -> Dict[str, str] | None:
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=1, frameon=True, fontsize=9)
 
     footnote = (
-        f"Current: {current_val:.2f}  |  CAGR: {cagr*100:.2f}%  |  Drawdown from peak: {dd:.2f}%\n"
+        f"Current: {current_val:.2f}  |  CAGR: {cagr_txt}  |  Drawdown from peak: {dd_txt}\n"
         f"As of {as_of}  {subtitle}"
     )
     fig.text(0.5, 0.01, footnote, ha="center", va="bottom", fontsize=8, color="#555555")
