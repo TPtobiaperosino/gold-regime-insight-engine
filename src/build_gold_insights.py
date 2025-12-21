@@ -5,7 +5,7 @@ import random
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -18,20 +18,14 @@ class Config:
     usd: str = "DX-Y.NYB"
     rates: str = "IEF"
     equity: str = "SPY"
-    vix: str = "^VIX"
-    vvix: str = "^VVIX"
     teny: str = "^TNX"
 
     momentum_weeks: int = 12
-    vix_lookback_weeks: int = 104
-    vix_percentile: float = 0.75
+    
 
-    rolling_corr_days: int = 60
     history_period: str = "max"
 
     latest_path: str = "data/latest.json"
-    regimes_path: str = "data/regimes.json"
-    rolling_corr_path: str = "data/rolling_corr.json"
 
     gld_vs_usd_png_path: str = "charts/gld_vs_usd_12m.png"
     gld_vs_usd_json_path: str = "data/gld_vs_usd_12m.json"
@@ -129,26 +123,6 @@ def momentum(series_weekly_price: pd.Series, weeks: int) -> pd.Series:
     return (series_weekly_price / series_weekly_price.shift(weeks) - 1).dropna()
 
 
-def rolling_corr(daily_returns: pd.DataFrame, target: str, drivers: List[str], window_days: int) -> pd.DataFrame:
-    out = pd.DataFrame(index=daily_returns.index)
-    if daily_returns is None or daily_returns.empty or target not in daily_returns.columns:
-        return out
-
-    tgt = daily_returns[target]
-    for d in drivers:
-        if d not in daily_returns.columns:
-            out[f"corr_{target}_{d}"] = np.nan
-            continue
-        aligned = pd.concat([tgt, daily_returns[d]], axis=1)
-        # Pairwise rolling corr with a strict min_periods to avoid overconfident values.
-        out[f"corr_{target}_{d}"] = aligned.iloc[:, 0].rolling(window_days, min_periods=window_days).corr(
-            aligned.iloc[:, 1]
-        )
-
-    # Keep rows where at least one driver correlation is available.
-    return out.dropna(how="all")
-
-
 def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
     w = cfg.momentum_weeks
 
@@ -165,55 +139,9 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
             "asof": None,
             "usd": "unknown",
             "rates": "unknown",
-            "risk_appetite": "unknown",
             "mom_usd_12w": float("nan"),
             "mom_rates_12w": float("nan"),
-            "vvix_level": float("nan"),
-            "vvix_p40": float("nan"),
-            "vvix_p70": float("nan"),
-            "vvix_data_ok": False,
-            "vvix_reason": "insufficient overlap",
         }
-
-    vvix_data_ok = True
-    vvix_reason = "ok"
-
-    vvix_lvl = (
-        px_weekly[cfg.vvix].loc[common_idx].dropna()
-        if cfg.vvix in px_weekly.columns
-        else pd.Series(dtype=float)
-    )
-    lookback = cfg.vix_lookback_weeks
-    if vvix_lvl.empty:
-        vvix_data_ok = False
-        vvix_reason = "vvix missing"
-        vvix_level = float("nan")
-        vvix_p40 = float("nan")
-        vvix_p70 = float("nan")
-        risk_app = "unknown"
-    elif last_dt not in vvix_lvl.index:
-        vvix_data_ok = False
-        vvix_reason = "vvix not available at last_dt"
-        vvix_level = float("nan")
-        vvix_p40 = float("nan")
-        vvix_p70 = float("nan")
-        risk_app = "unknown"
-    else:
-        p40 = vvix_lvl.rolling(lookback, min_periods=lookback).quantile(0.40)
-        p70 = vvix_lvl.rolling(lookback, min_periods=lookback).quantile(0.70)
-        vvix_level = float(vvix_lvl.loc[last_dt])
-        vvix_p40 = float(p40.loc[last_dt]) if last_dt in p40.index else float("nan")
-        vvix_p70 = float(p70.loc[last_dt]) if last_dt in p70.index else float("nan")
-        if not np.isfinite(vvix_p40) or not np.isfinite(vvix_p70):
-            vvix_data_ok = False
-            vvix_reason = "insufficient lookback"
-            risk_app = "unknown"
-        elif vvix_level <= vvix_p40:
-            risk_app = "high"
-        elif vvix_level <= vvix_p70:
-            risk_app = "medium"
-        else:
-            risk_app = "low"
 
     usd_strong = bool(mom_usd.loc[last_dt] > 0)
     rates_up = bool(mom_rates.loc[last_dt] < 0)
@@ -222,118 +150,9 @@ def current_regime(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
         "asof": last_dt.date().isoformat(),
         "usd": "strong" if usd_strong else "weak",
         "rates": "up" if rates_up else "down",
-        "risk_appetite": risk_app,
         "mom_usd_12w": float(mom_usd.loc[last_dt]),
         "mom_rates_12w": float(mom_rates.loc[last_dt]),
-        "vvix_level": vvix_level,
-        "vvix_p40": vvix_p40,
-        "vvix_p70": vvix_p70,
-        "vvix_data_ok": bool(vvix_data_ok),
-        "vvix_reason": str(vvix_reason),
     }
-
-
-def build_weekly_regimes(px_weekly: pd.DataFrame, cfg: Config) -> pd.DataFrame:
-    w = cfg.momentum_weeks
-
-    mom_usd = momentum(px_weekly[cfg.usd], w)
-    mom_rates = momentum(px_weekly[cfg.rates], w)
-
-    vvix_lvl = px_weekly[cfg.vvix] if cfg.vvix in px_weekly.columns else pd.Series(dtype=float)
-    p40 = vvix_lvl.dropna().rolling(cfg.vix_lookback_weeks, min_periods=cfg.vix_lookback_weeks).quantile(0.40)
-    p70 = vvix_lvl.dropna().rolling(cfg.vix_lookback_weeks, min_periods=cfg.vix_lookback_weeks).quantile(0.70)
-
-    idx = mom_usd.index.intersection(mom_rates.index)
-    df = pd.DataFrame(index=idx)
-
-    df["usd"] = np.where(mom_usd.loc[idx] > 0, "strong", "weak")
-    df["rates"] = np.where(mom_rates.loc[idx] < 0, "up", "down")
-    vvix_idx = pd.to_numeric(vvix_lvl.reindex(idx), errors="coerce")
-    p40_r = pd.to_numeric(p40.reindex(idx), errors="coerce")
-    p70_r = pd.to_numeric(p70.reindex(idx), errors="coerce")
-    ok = vvix_idx.notna() & p40_r.notna() & p70_r.notna()
-    df["risk_appetite"] = "unknown"
-    df.loc[ok & (vvix_idx <= p40_r), "risk_appetite"] = "high"
-    df.loc[ok & (vvix_idx > p40_r) & (vvix_idx <= p70_r), "risk_appetite"] = "medium"
-    df.loc[ok & (vvix_idx > p70_r), "risk_appetite"] = "low"
-
-    df["regime"] = df["usd"] + "_" + df["rates"] + "_" + df["risk_appetite"]
-    return df
-
-
-def build_regime_table(px_weekly: pd.DataFrame, weekly_ret: pd.DataFrame, cfg: Config) -> pd.DataFrame:
-    w = cfg.momentum_weeks
-
-    mom_usd = momentum(px_weekly[cfg.usd], w)
-    mom_rates = momentum(px_weekly[cfg.rates], w)
-
-    vvix_lvl = px_weekly[cfg.vvix] if cfg.vvix in px_weekly.columns else pd.Series(dtype=float)
-    p40 = vvix_lvl.dropna().rolling(cfg.vix_lookback_weeks, min_periods=cfg.vix_lookback_weeks).quantile(0.40)
-    p70 = vvix_lvl.dropna().rolling(cfg.vix_lookback_weeks, min_periods=cfg.vix_lookback_weeks).quantile(0.70)
-
-    idx = weekly_ret.index.intersection(mom_usd.index).intersection(mom_rates.index)
-    df = pd.DataFrame(index=idx)
-
-    df["gold_ret"] = weekly_ret.loc[idx, cfg.gold]
-    df["usd"] = np.where(mom_usd.loc[idx] > 0, "strong", "weak")
-    df["rates"] = np.where(mom_rates.loc[idx] < 0, "up", "down")
-
-    vvix_idx = pd.to_numeric(vvix_lvl.reindex(idx), errors="coerce")
-    p40_r = pd.to_numeric(p40.reindex(idx), errors="coerce")
-    p70_r = pd.to_numeric(p70.reindex(idx), errors="coerce")
-    ok = vvix_idx.notna() & p40_r.notna() & p70_r.notna()
-    df["risk_appetite"] = "unknown"
-    df.loc[ok & (vvix_idx <= p40_r), "risk_appetite"] = "high"
-    df.loc[ok & (vvix_idx > p40_r) & (vvix_idx <= p70_r), "risk_appetite"] = "medium"
-    df.loc[ok & (vvix_idx > p70_r), "risk_appetite"] = "low"
-
-    g = df.groupby(["usd", "rates", "risk_appetite"])
-    table = g["gold_ret"].agg(
-        avg_weekly_return="mean",
-        vol_weekly="std",
-        n_obs="count",
-    ).reset_index()
-    hit = g["gold_ret"].apply(lambda x: float((x > 0).mean())).reset_index(name="hit_rate")
-    table = table.merge(hit, on=["usd", "rates", "risk_appetite"], how="left")
-
-    table = table.sort_values(["risk_appetite", "usd", "rates"]).reset_index(drop=True)
-    return table
-
-
-def expected_impact_from_table(
-    regime_table: pd.DataFrame, usd: str, rates: str, risk_appetite: str
-) -> Tuple[str, Dict[str, float]]:
-    row = regime_table[
-        (regime_table["usd"] == usd)
-        & (regime_table["rates"] == rates)
-        & (regime_table["risk_appetite"] == risk_appetite)
-    ]
-    if row.empty:
-        return "Neutral", {"avg_weekly_return": float("nan"), "hit_rate": float("nan")}
-
-    avg = float(row["avg_weekly_return"].iloc[0])
-    hit = float(row["hit_rate"].iloc[0])
-
-    q1 = float(regime_table["avg_weekly_return"].quantile(0.33))
-    q2 = float(regime_table["avg_weekly_return"].quantile(0.66))
-
-    if avg <= q1:
-        label = "Headwind"
-    elif avg >= q2:
-        label = "Tailwind"
-    else:
-        label = "Neutral"
-
-    return label, {"avg_weekly_return": avg, "hit_rate": hit}
-
-
-def _ordinal(n: int) -> str:
-    n = int(n)
-    if 10 <= (n % 100) <= 20:
-        suffix = "th"
-    else:
-        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-    return f"{n}{suffix}"
 
 
 def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, object]:
@@ -346,12 +165,10 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     required = [cfg.usd, cfg.rates]
     if not all(r in px_weekly.columns for r in required):
         return {
-            "label": "USD unknown · Bond prices unknown (IEF) · Risk appetite unknown",
+            "label": "USD unknown · Bond prices unknown (IEF)",
             "metrics": {
                 "usd_momentum_12w_pct": None,
                 "rates_momentum_12w_pct": None,
-                "vvix_percentile_104w": None,
-                "vvix_interpretation": "VVIX data unavailable",
             },
         }
 
@@ -359,12 +176,10 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     idx = idx.intersection(px_weekly[cfg.rates].dropna().index)
     if idx.empty:
         return {
-            "label": "USD unknown · Bond prices unknown (IEF) · Risk appetite unknown",
+            "label": "USD unknown · Bond prices unknown (IEF)",
             "metrics": {
                 "usd_momentum_12w_pct": None,
                 "rates_momentum_12w_pct": None,
-                "vvix_percentile_104w": None,
-                "vvix_interpretation": "VVIX data unavailable",
             },
         }
 
@@ -388,137 +203,73 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     # but present it as bond prices (inverse-to-yields).
     bond_label = "down" if rates_label == "up" else "up"
 
-    pct = float("nan")
-    if cfg.vvix in px_weekly.columns:
-        vvix_s = px_weekly[cfg.vvix].dropna()
-        if (not vvix_s.empty) and (last_dt in vvix_s.index):
-            vvix_until = vvix_s.loc[:last_dt].dropna()
-            lookback_n = cfg.vix_lookback_weeks
-            if len(vvix_until) >= lookback_n:
-                hist = vvix_until.iloc[-lookback_n:]
-                vvix_last = hist.iloc[-1]
-                pct = float((hist <= vvix_last).mean() * 100.0)
-
-    if not np.isfinite(pct):
-        risk_app = "unknown"
-    elif pct <= 40.0:
-        risk_app = "high"
-    elif pct <= 70.0:
-        risk_app = "medium"
-    else:
-        risk_app = "low"
-
-    pct_round = round(pct, 1) if np.isfinite(pct) else None
-    if np.isfinite(pct):
-        vvix_interpretation = f"VVIX at {_ordinal(round(pct))} percentile → risk appetite {risk_app}"
-    elif cfg.vvix not in px_weekly.columns:
-        vvix_interpretation = "VVIX missing"
-    else:
-        vvix_interpretation = "VVIX unavailable/insufficient lookback"
-
     snapshot = {
-        "label": f"USD {usd_label} · Bond prices {bond_label} (IEF) · Risk appetite {risk_app}",
+        "label": f"USD {usd_label} · Bond prices {bond_label} (IEF)",
         "metrics": {
             "usd_momentum_12w_pct": round(usd_mom * 100.0, 2) if np.isfinite(usd_mom) else None,
             "rates_momentum_12w_pct": round(rates_mom * 100.0, 2) if np.isfinite(rates_mom) else None,
-            "vvix_percentile_104w": pct_round,
-            "vvix_interpretation": vvix_interpretation,
         },
     }
 
     return snapshot
 
-def generate_insights(
-    regime_meta: Dict[str, str],
-    regime_table: pd.DataFrame,
-    corr_latest: Dict[str, float],
-) -> List[Dict[str, object]]:
-    insights: List[Dict[str, object]] = []
-
+def generate_insights(regime_meta: Dict[str, str]) -> List[Dict[str, object]]:
     usd = regime_meta["usd"]
     rates = regime_meta["rates"]
-    risk_app = regime_meta.get("risk_appetite")
-
-    impact, stats = expected_impact_from_table(regime_table, usd, rates, risk_app)
 
     bond_bucket = "unknown"
     if rates in ("up", "down"):
         bond_bucket = "down" if rates == "up" else "up"
 
-    insights.append(
+    return [
         {
             "title": "Current macro regime",
-            "evidence": (
-                f"USD={usd}, Bond prices (IEF)={bond_bucket}, Risk appetite={risk_app} (asof {regime_meta['asof']})"
-            ),
-            "metric": {
-                "avg_weekly_return": stats["avg_weekly_return"],
-                "hit_rate": stats["hit_rate"],
-                "impact": impact,
-            },
+            "evidence": f"USD={usd}, Bond prices (IEF)={bond_bucket} (asof {regime_meta['asof']})",
+            "metric": {},
         }
-    )
+    ]
 
-    c_usd = corr_latest.get("corr_GLD_DXY")
-    if c_usd is not None and np.isfinite(c_usd) and c_usd < -0.40:
-        insights.append(
-            {
-                "title": "USD pressure is dominant",
-                "evidence": "Rolling 60d correlation Gold vs USD is strongly negative.",
-                "metric": {"rolling_corr_60d": float(c_usd), "threshold": -0.40},
-            }
-        )
 
-    c_rates = corr_latest.get("corr_GLD_IEF")
-    if c_rates is not None and np.isfinite(c_rates) and c_rates > 0.30:
-        insights.append(
-            {
-                "title": "Gold is behaving as a rates-sensitive asset",
-                "evidence": "Positive rolling correlation with bond prices (IEF) implies inverse linkage to yields.",
-                "metric": {"rolling_corr_60d": float(c_rates), "threshold": 0.30},
-            }
-        )
+def _sanitize_for_json(x: object) -> object:
+    """Convert non-JSON-safe values (NaN/Inf, numpy scalars) into valid JSON values.
 
-    avg_all = regime_table["avg_weekly_return"]
-    if np.isfinite(stats["avg_weekly_return"]):
-        bottom_quartile = float(avg_all.quantile(0.25))
-        if stats["avg_weekly_return"] <= bottom_quartile:
-            insights.append(
-                {
-                    "title": "Historically unfavorable regime for gold",
-                    "evidence": "This regime sits in the bottom quartile of historical average gold weekly returns.",
-                    "metric": {
-                        "avg_weekly_return": stats["avg_weekly_return"],
-                        "bottom_quartile": bottom_quartile,
-                    },
-                }
-            )
+    Browsers' Response.json() rejects NaN/Infinity tokens, so we normalize them to null.
+    """
+    if x is None or isinstance(x, (str, bool, int)):
+        return x
 
-    if np.isfinite(stats["hit_rate"]) and stats["hit_rate"] < 0.50:
-        insights.append(
-            {
-                "title": "Low reliability in this regime",
-                "evidence": "Gold was positive in less than 50% of weeks in similar macro conditions.",
-                "metric": {"hit_rate": stats["hit_rate"], "threshold": 0.50},
-            }
-        )
+    # numpy scalars
+    if isinstance(x, (np.integer,)):
+        return int(x)
+    if isinstance(x, (np.floating,)):
+        x = float(x)
 
-    if risk_app == "low" and np.isfinite(stats["hit_rate"]) and stats["hit_rate"] < 0.55:
-        insights.append(
-            {
-                "title": "Not a consistent crisis hedge (in this sample)",
-                "evidence": "In low risk-appetite weeks (VVIX elevated), gold did not deliver a high positive frequency historically.",
-                "metric": {"hit_rate": stats["hit_rate"], "context": "risk_appetite=low"},
-            }
-        )
+    # floats (catch NaN/Inf)
+    if isinstance(x, float):
+        return x if np.isfinite(x) else None
 
-    return insights[:6]
+    if isinstance(x, dict):
+        return {str(k): _sanitize_for_json(v) for k, v in x.items()}
+
+    if isinstance(x, (list, tuple)):
+        return [_sanitize_for_json(v) for v in x]
+
+    # pandas / numpy objects sometimes expose .item()
+    try:
+        item = getattr(x, "item", None)
+        if callable(item):
+            return _sanitize_for_json(item())
+    except Exception:
+        pass
+
+    return x
 
 
 def write_json(path: str, payload: object) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
+        safe_payload = _sanitize_for_json(payload)
+        json.dump(safe_payload, f, ensure_ascii=False, indent=2, allow_nan=False)
 
 
 def _is_finite(x) -> bool:
@@ -895,8 +646,10 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     except Exception:
         gld_dd_12m = float("nan")
 
-    json_payload = {
-        "asof": asof.date().isoformat() if isinstance(asof, pd.Timestamp) else str(asof),
+    asof_str = asof.date().isoformat() if isinstance(asof, pd.Timestamp) else str(asof)
+
+    raw_payload = {
+        "asof": asof_str,
         "regime": regime_str,
         "dxy_mom_1w": dxy_mom_1w,
         "dxy_mom_4w": dxy_mom_4w,
@@ -913,13 +666,58 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
         "gld_dd_12m": gld_dd_12m,
     }
 
-    write_json(cfg.regime_snapshot_json_path, json_payload)
+    ui_rows = [
+        {
+            "period": "1W",
+            "USD (DXY)": {"value": dxy_mom_1w, "display": _pct(dxy_mom_1w, 2)},
+            "US 10Y yield Δ": {"value": y10_chg_1w_bps, "unit": "bps", "display": f"{_num(y10_chg_1w_bps, 1)} bps"},
+            "Gold (GLD)": {"value": gld_ret_1w, "display": _pct(gld_ret_1w, 2)},
+        },
+        {
+            "period": "4W",
+            "USD (DXY)": {"value": dxy_mom_4w, "display": _pct(dxy_mom_4w, 2)},
+            "US 10Y yield Δ": {"value": y10_chg_4w_bps, "unit": "bps", "display": f"{_num(y10_chg_4w_bps, 1)} bps"},
+            "Gold (GLD)": {"value": gld_ret_4w, "display": _pct(gld_ret_4w, 2)},
+        },
+        {
+            "period": "12W",
+            "USD (DXY)": {"value": dxy_mom_12w, "display": _pct(dxy_mom_12w, 2)},
+            "US 10Y yield Δ": {"value": y10_chg_12w_bps, "unit": "bps", "display": f"{_num(y10_chg_12w_bps, 1)} bps"},
+            "Gold (GLD)": {"value": gld_ret_12w, "display": _pct(gld_ret_12w, 2)},
+        },
+        {
+            "period": "12M",
+            "USD (DXY)": {"value": dxy_mom_52w, "display": _pct(dxy_mom_52w, 2)},
+            "US 10Y yield Δ": {"value": y10_chg_52w_bps, "unit": "bps", "display": f"{_num(y10_chg_52w_bps, 1)} bps"},
+            "Gold (GLD)": {"value": gld_ret_12m, "display": _pct(gld_ret_12m, 2)},
+        },
+    ]
+
+    ui_payload = {
+        "asof": asof_str,
+        "title": "Regime snapshot",
+        "headline": regime_str,
+        "table": {
+            "columns": ["Period", "USD (DXY)", "US 10Y yield Δ", "Gold (GLD)"],
+            "rows": ui_rows,
+        },
+        "highlights": [
+            {
+                "label": "Gold drawdown (12M)",
+                "value": gld_dd_12m,
+                "display": _pct(gld_dd_12m, 2),
+            }
+        ],
+        "raw": raw_payload,
+    }
+
+    write_json(cfg.regime_snapshot_json_path, ui_payload)
 
     fig, ax = plt.subplots(figsize=(10, 5.5))
     ax.axis("off")
 
     title = "Regime Snapshot"
-    subtitle = f"As of {json_payload['asof']}"
+    subtitle = f"As of {asof_str}"
     fig.suptitle(title, fontsize=16, fontweight="bold", y=0.96)
     ax.set_title(subtitle, fontsize=11, loc="center", pad=8, color="#555555")
 
@@ -984,7 +782,6 @@ def save_gld_spy_ratio_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[st
         return {"png_path": cfg.gld_spy_ratio_png_path, "json_path": cfg.gld_spy_ratio_json_path}
 
     ratio = gld / spy
-    ratio_50dma = ratio.rolling(50).mean()
 
     current_ratio = float(ratio.iloc[-1])
     percentile_12m = float((ratio <= current_ratio).mean() * 100)
@@ -1038,7 +835,6 @@ def save_gld_spy_ratio_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[st
         {
             "date": ratio.index.date.astype(str),
             "ratio": ratio.values.astype(float),
-            "ratio_50dma": ratio_50dma.values.astype(float),
         }
     )
     stats = {
@@ -1358,7 +1154,7 @@ def plot_gold_value_trend_2005(cfg: Config = CFG) -> Dict[str, str] | None:
 
 
 def main(cfg: Config = CFG) -> None:
-    tickers = [cfg.gold, cfg.usd, cfg.rates, cfg.equity, cfg.vix, cfg.vvix, cfg.teny]
+    tickers = [cfg.gold, cfg.usd, cfg.rates, cfg.equity, cfg.teny]
 
     px_daily = download_prices(tickers=tickers, period=cfg.history_period)
     px_daily = align_and_clean(px_daily)
@@ -1373,69 +1169,13 @@ def main(cfg: Config = CFG) -> None:
             counts.append(f"{col}:{n}")
         print(f"[diag] px_daily rows={len(px_daily)} range={start}->{end} nonnull=" + ",".join(counts))
 
-    ret_daily = pct_return(px_daily)
-
     px_weekly = to_weekly_prices(px_daily)
-    ret_weekly = pct_return(px_weekly)
-
-    corr_df = rolling_corr(
-        daily_returns=ret_daily,
-        target=cfg.gold,
-        drivers=[cfg.usd, cfg.rates, cfg.equity, cfg.vix],
-        window_days=cfg.rolling_corr_days,
-    )
-    corr_df = corr_df.rename(
-        columns={
-            f"corr_{cfg.gold}_{cfg.vix}": f"corr_{cfg.gold}_VIX",
-            f"corr_{cfg.gold}_{cfg.usd}": f"corr_{cfg.gold}_DXY",
-        }
-    )
 
     reg_now = current_regime(px_weekly=px_weekly, cfg=cfg)
-    weekly_regimes = build_weekly_regimes(px_weekly=px_weekly, cfg=cfg)
 
     regime_snapshot_meta = build_regime_snapshot(px_weekly=px_weekly, cfg=cfg)
 
-    regime_table = build_regime_table(px_weekly=px_weekly, weekly_ret=ret_weekly, cfg=cfg)
-    impact, stats_in_regime = expected_impact_from_table(
-        regime_table, reg_now["usd"], reg_now["rates"], reg_now.get("risk_appetite")
-    )
-
-    def _last_finite(series: pd.Series) -> float:
-        try:
-            s = pd.to_numeric(series, errors="coerce").dropna()
-            return float(s.iloc[-1]) if not s.empty else float("nan")
-        except Exception:
-            return float("nan")
-
-    if corr_df is None or corr_df.empty:
-        corr_latest = {
-            "corr_GLD_DXY": float("nan"),
-            "corr_GLD_IEF": float("nan"),
-            "corr_GLD_SPY": float("nan"),
-            "corr_GLD_VIX": float("nan"),
-        }
-    else:
-        corr_latest = {
-            "corr_GLD_DXY": _last_finite(corr_df.get(f"corr_{cfg.gold}_DXY")),
-            "corr_GLD_IEF": _last_finite(corr_df.get(f"corr_{cfg.gold}_{cfg.rates}")),
-            "corr_GLD_SPY": _last_finite(corr_df.get(f"corr_{cfg.gold}_{cfg.equity}")),
-            "corr_GLD_VIX": _last_finite(corr_df.get(f"corr_{cfg.gold}_VIX")),
-        }
-
-    insights = generate_insights(reg_now, regime_table, corr_latest)
-
-    stats_in_regime_display = {
-        "avg_weekly_return": fmt_pct(stats_in_regime["avg_weekly_return"], 2),
-        "hit_rate": fmt_pct(stats_in_regime["hit_rate"], 1),
-    }
-
-    rolling_corr_60d_latest_display = {
-        "corr_GLD_DXY": fmt_num(corr_latest["corr_GLD_DXY"], 2),
-        "corr_GLD_IEF": fmt_num(corr_latest["corr_GLD_IEF"], 2),
-        "corr_GLD_SPY": fmt_num(corr_latest["corr_GLD_SPY"], 2),
-        "corr_GLD_VIX": fmt_num(corr_latest["corr_GLD_VIX"], 2),
-    }
+    insights = generate_insights(reg_now)
 
     chart_meta = save_gld_vs_usd_12m_chart(px_daily=px_daily, cfg=cfg)
     teny_meta = save_gld_vs_teny_12m_chart(px_daily=px_daily, cfg=cfg)
@@ -1447,24 +1187,14 @@ def main(cfg: Config = CFG) -> None:
 
     latest_payload = {
         "asof": reg_now["asof"],
-        "regime": {"usd": reg_now["usd"], "rates": reg_now["rates"], "risk_appetite": reg_now.get("risk_appetite")},
+        "regime": {"usd": reg_now["usd"], "rates": reg_now["rates"]},
         "regime_snapshot": regime_snap_meta,
         "regime_snapshot_meta": regime_snapshot_meta,
         "signals": {
             "mom_usd_12w": reg_now["mom_usd_12w"],
             "mom_rates_12w": reg_now["mom_rates_12w"],
-            "vvix_level": reg_now.get("vvix_level"),
-            "vvix_p40": reg_now.get("vvix_p40"),
-            "vvix_p70": reg_now.get("vvix_p70"),
-            "vvix_data_ok": reg_now.get("vvix_data_ok"),
-            "vvix_reason": reg_now.get("vvix_reason"),
         },
 
-        "expected_impact": impact,
-        "stats_in_regime": stats_in_regime,
-        "rolling_corr_60d_latest": corr_latest,
-        "stats_in_regime_display": stats_in_regime_display,
-        "rolling_corr_60d_latest_display": rolling_corr_60d_latest_display,
         "charts": {
             "gld_vs_usd_12m": chart_meta,
             "gld_vs_10y_12m": teny_meta,
@@ -1477,31 +1207,10 @@ def main(cfg: Config = CFG) -> None:
         "insights": insights,
     }
 
-    regimes_payload = regime_table.to_dict(orient="records")
-
-    rolling_corr_payload = {
-        "window_days": cfg.rolling_corr_days,
-        "series": [],
-    }
-
-    if corr_df is not None and not corr_df.empty:
-        tmp = corr_df.reset_index()
-        first_col = tmp.columns[0]
-        tmp = tmp.rename(columns={first_col: "date"})
-        if np.issubdtype(tmp["date"].dtype, np.datetime64):
-            tmp["date"] = tmp["date"].dt.date.astype(str)
-        else:
-            tmp["date"] = pd.to_datetime(tmp["date"]).dt.date.astype(str)
-        rolling_corr_payload["series"] = tmp.to_dict(orient="records")
-
     write_json(cfg.latest_path, latest_payload)
-    write_json(cfg.regimes_path, regimes_payload)
-    write_json(cfg.rolling_corr_path, rolling_corr_payload)
 
     print("✅ Updated outputs:")
     print(f" - {cfg.latest_path}")
-    print(f" - {cfg.regimes_path}")
-    print(f" - {cfg.rolling_corr_path}")
     print(f" - {cfg.gld_vs_usd_png_path}")
     print(f" - {cfg.gld_vs_usd_json_path}")
     print(f" - {cfg.gld_vs_teny_png_path}")
