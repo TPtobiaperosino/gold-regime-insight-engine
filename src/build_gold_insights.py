@@ -5,6 +5,7 @@ import random
 import time
 from dataclasses import dataclass
 from pathlib import Path
+import csv
 from typing import Dict, List
 
 import numpy as np
@@ -271,6 +272,29 @@ def write_json(path: str, payload: object) -> None:
         json.dump(safe_payload, f, ensure_ascii=False, indent=2, allow_nan=False)
 
 
+def write_csv(path: str, rows: List[Dict[str, object]], fieldnames: List[str]) -> None:
+    """Write a browser-friendly CSV (empty cells for null/NaN/Inf)."""
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+
+    def _cell(v: object) -> str:
+        v = _sanitize_for_json(v)
+        if v is None:
+            return ""
+        return str(v)
+
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: _cell(r.get(k)) for k in fieldnames})
+
+
+def _quarter_label_from_date_str(date_str: str) -> str:
+    dt = pd.to_datetime(date_str)
+    q = (dt.month - 1) // 3 + 1
+    return f"Q{q} '{dt.year % 100:02d}"
+
+
 def _is_finite(x) -> bool:
     try:
         return x is not None and np.isfinite(x)
@@ -371,12 +395,14 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
         fig.tight_layout()
         fig.savefig(cfg.gld_vs_usd_png_path, dpi=180)
         plt.close(fig)
+        csv_path = cfg.gld_vs_usd_json_path.replace(".json", ".csv")
         write_json(
             cfg.gld_vs_usd_json_path,
             {
                 "meta": {
                     "title": "Gold vs US Dollar — last 12 months",
                     "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                    "csv_path": csv_path,
                     "series": [
                         {
                             "key": "gld",
@@ -395,6 +421,7 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
                 "series": [],
             },
         )
+        write_csv(csv_path, [], ["date", "gld", "dxy"])
         return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
     gld_color = "#1b6ca8"
@@ -461,12 +488,14 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
             "dxy": dxy.values.astype(float),
         }
     )
+    csv_path = cfg.gld_vs_usd_json_path.replace(".json", ".csv")
     write_json(
         cfg.gld_vs_usd_json_path,
         {
             "meta": {
                 "title": "Gold vs US Dollar — last 12 months",
                 "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                "csv_path": csv_path,
                 "series": [
                     {
                         "key": "gld",
@@ -486,7 +515,9 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
         },
     )
 
-    return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
+    write_csv(csv_path, df_out.to_dict(orient="records"), ["date", "gld", "dxy"])
+
+    return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path, "csv_path": csv_path}
 
 
 def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
@@ -515,12 +546,14 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
         fig.tight_layout()
         fig.savefig(cfg.gld_vs_teny_png_path, dpi=180)
         plt.close(fig)
+        csv_path = cfg.gld_vs_teny_json_path.replace(".json", ".csv")
         write_json(
             cfg.gld_vs_teny_json_path,
             {
                 "meta": {
                     "title": "Gold vs US 10Y yield — last 12 months",
                     "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                    "csv_path": csv_path,
                     "series": [
                         {
                             "key": "gld",
@@ -539,6 +572,7 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
                 "series": [],
             },
         )
+        write_csv(csv_path, [], ["date", "gld", "teny_yield_pct"])
         return {"png_path": cfg.gld_vs_teny_png_path, "json_path": cfg.gld_vs_teny_json_path}
 
     tny_pct, tnx_meta = _tnx_to_yield_percent_with_meta(tnx)
@@ -600,12 +634,14 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
             "teny_yield_pct": tny_pct.values.astype(float),
         }
     )
+    csv_path = cfg.gld_vs_teny_json_path.replace(".json", ".csv")
     write_json(
         cfg.gld_vs_teny_json_path,
         {
             "meta": {
                 "title": "Gold vs US 10Y yield — last 12 months",
                 "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                "csv_path": csv_path,
                 "series": [
                     {
                         "key": "gld",
@@ -630,7 +666,9 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
         },
     )
 
-    return {"png_path": cfg.gld_vs_teny_png_path, "json_path": cfg.gld_vs_teny_json_path}
+    write_csv(csv_path, df_out.to_dict(orient="records"), ["date", "gld", "teny_yield_pct"])
+
+    return {"png_path": cfg.gld_vs_teny_png_path, "json_path": cfg.gld_vs_teny_json_path, "csv_path": csv_path}
 
 
 def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
@@ -810,6 +848,7 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
             "columns": ["Period", "USD", "US 10Y yield Δ", "Gold"],
             "rows": ui_rows,
         },
+        "csv_path": cfg.regime_snapshot_json_path.replace(".json", ".csv"),
         "highlights": [
             {
                 "label": "Gold drawdown (12M)",
@@ -821,6 +860,20 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     }
 
     write_json(cfg.regime_snapshot_json_path, ui_payload)
+
+    # CSV export: use numeric values (not display strings)
+    csv_rows = []
+    for r in ui_rows:
+        csv_rows.append(
+            {
+                "period": r.get("period"),
+                "usd_change_pct": (r.get("USD") or {}).get("value"),
+                "us_10y_yield_change_bps": (r.get("US 10Y yield Δ") or {}).get("value"),
+                "gold_return_pct": (r.get("Gold") or {}).get("value"),
+            }
+        )
+    csv_path = cfg.regime_snapshot_json_path.replace(".json", ".csv")
+    write_csv(csv_path, csv_rows, ["period", "usd_change_pct", "us_10y_yield_change_bps", "gold_return_pct"])
 
     fig, ax = plt.subplots(figsize=(10, 5.5))
     ax.axis("off")
@@ -887,8 +940,21 @@ def save_gld_spy_ratio_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[st
         fig.tight_layout()
         fig.savefig(cfg.gld_spy_ratio_png_path, dpi=180)
         plt.close(fig)
-        write_json(cfg.gld_spy_ratio_json_path, {"series": [], "stats": {}})
-        return {"png_path": cfg.gld_spy_ratio_png_path, "json_path": cfg.gld_spy_ratio_json_path}
+        csv_path = cfg.gld_spy_ratio_json_path.replace(".json", ".csv")
+        write_json(
+            cfg.gld_spy_ratio_json_path,
+            {
+                "meta": {
+                    "title": "Gold / Equity benchmark ratio — last 12 months",
+                    "csv_path": csv_path,
+                    "series": [{"key": "ratio", "label": "Gold / Equity benchmark ratio", "unit": "ratio"}],
+                },
+                "series": [],
+                "stats": {},
+            },
+        )
+        write_csv(csv_path, [], ["date", "ratio"])
+        return {"png_path": cfg.gld_spy_ratio_png_path, "json_path": cfg.gld_spy_ratio_json_path, "csv_path": csv_path}
 
     ratio = gld / spy
 
@@ -953,9 +1019,22 @@ def save_gld_spy_ratio_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[st
         "drawdown_12m_pct": drawdown_12m,
         "as_of": as_of_date,
     }
-    write_json(cfg.gld_spy_ratio_json_path, {"series": df_out.to_dict(orient="records"), "stats": stats})
+    csv_path = cfg.gld_spy_ratio_json_path.replace(".json", ".csv")
+    write_json(
+        cfg.gld_spy_ratio_json_path,
+        {
+            "meta": {
+                "title": "Gold / Equity benchmark ratio — last 12 months",
+                "csv_path": csv_path,
+                "series": [{"key": "ratio", "label": "Gold / Equity benchmark ratio", "unit": "ratio"}],
+            },
+            "series": df_out.to_dict(orient="records"),
+            "stats": stats,
+        },
+    )
+    write_csv(csv_path, df_out.to_dict(orient="records"), ["date", "ratio"])
 
-    return {"png_path": cfg.gld_spy_ratio_png_path, "json_path": cfg.gld_spy_ratio_json_path}
+    return {"png_path": cfg.gld_spy_ratio_png_path, "json_path": cfg.gld_spy_ratio_json_path, "csv_path": csv_path}
 
 
 def plot_gold_oil_ratio_12m(cfg: Config = CFG) -> Dict[str, str] | None:
@@ -1058,9 +1137,22 @@ def plot_gold_oil_ratio_12m(cfg: Config = CFG) -> Dict[str, str] | None:
             "bias": bias,
             "as_of": as_of,
         }
-        write_json(cfg.gold_oil_ratio_json_path, {"series": df_out.to_dict(orient="records"), "stats": stats})
+        csv_path = cfg.gold_oil_ratio_json_path.replace(".json", ".csv")
+        write_json(
+            cfg.gold_oil_ratio_json_path,
+            {
+                "meta": {
+                    "title": "Gold / Oil ratio — last 12 months",
+                    "csv_path": csv_path,
+                    "series": [{"key": "ratio", "label": "Gold / Oil ratio", "unit": "ratio"}],
+                },
+                "series": df_out.to_dict(orient="records"),
+                "stats": stats,
+            },
+        )
+        write_csv(csv_path, df_out.to_dict(orient="records"), ["date", "ratio"])
 
-        return {"png_path": cfg.gold_oil_ratio_png_path, "json_path": cfg.gold_oil_ratio_json_path}
+        return {"png_path": cfg.gold_oil_ratio_png_path, "json_path": cfg.gold_oil_ratio_json_path, "csv_path": csv_path}
     except Exception:
         return None
 
@@ -1172,7 +1264,11 @@ def plot_credit_risk_premium_20y(cfg: Config = CFG) -> Dict[str, str] | None:
     fig.savefig(cfg.credit_risk_premium_20y_png_path, dpi=180)
     plt.close(fig)
 
-    df_out = pd.DataFrame({"date": hy_oas.index.date.astype(str), "hy_oas": hy_oas.values.astype(float)})
+    # For long-history charts, downsample to quarter-end points so quarter labels are stable in
+    # charting libraries that aggressively reduce x-axis ticks.
+    hy_oas_q = hy_oas.resample("QE-DEC").last().dropna()
+    df_out = pd.DataFrame({"date": hy_oas_q.index.date.astype(str), "hy_oas": hy_oas_q.values.astype(float)})
+    df_out["quarter"] = df_out["date"].map(_quarter_label_from_date_str)
     stats = {
         "current_hy_oas_pct": current_hy,
         "hy_oas_percentile_20y": hy_pct,
@@ -1183,9 +1279,24 @@ def plot_credit_risk_premium_20y(cfg: Config = CFG) -> Dict[str, str] | None:
         "as_of": as_of,
         "start": pd.to_datetime(hy_oas.index.min()).date().isoformat(),
     }
-    write_json(cfg.credit_risk_premium_20y_json_path, {"series": df_out.to_dict(orient="records"), "stats": stats})
+    csv_path = cfg.credit_risk_premium_20y_json_path.replace(".json", ".csv")
+    write_json(
+        cfg.credit_risk_premium_20y_json_path,
+        {
+            "meta": {
+                "title": "High-yield credit spread (OAS) — quarter-end samples",
+                "notes": "Series is quarter-end sampled to stabilize quarter labels on long histories.",
+                "csv_path": csv_path,
+                "series": [{"key": "hy_oas", "label": "High-yield credit spread (OAS)", "unit": "%"}],
+                "x": {"date_key": "date", "quarter_label_key": "quarter"},
+            },
+            "series": df_out.to_dict(orient="records"),
+            "stats": stats,
+        },
+    )
+    write_csv(csv_path, df_out.to_dict(orient="records"), ["date", "quarter", "hy_oas"])
 
-    return {"png_path": cfg.credit_risk_premium_20y_png_path, "json_path": cfg.credit_risk_premium_20y_json_path}
+    return {"png_path": cfg.credit_risk_premium_20y_png_path, "json_path": cfg.credit_risk_premium_20y_json_path, "csv_path": csv_path}
 
 
 def plot_gold_value_trend_2005(cfg: Config = CFG) -> Dict[str, str] | None:
@@ -1250,7 +1361,9 @@ def plot_gold_value_trend_2005(cfg: Config = CFG) -> Dict[str, str] | None:
     fig.savefig(cfg.gold_value_trend_2005_png_path, dpi=180)
     plt.close(fig)
 
-    df_out = pd.DataFrame({"date": series.index.date.astype(str), "value": series.values.astype(float)})
+    series_q = series.resample("QE-DEC").last().dropna()
+    df_out = pd.DataFrame({"date": series_q.index.date.astype(str), "value": series_q.values.astype(float)})
+    df_out["quarter"] = df_out["date"].map(_quarter_label_from_date_str)
     stats = {
         "as_of": as_of,
         "start_used": start_used,
@@ -1260,9 +1373,24 @@ def plot_gold_value_trend_2005(cfg: Config = CFG) -> Dict[str, str] | None:
         "drawdown_from_peak_pct": dd,
         "note": subtitle.strip(),
     }
-    write_json(cfg.gold_value_trend_2005_json_path, {"series": df_out.to_dict(orient="records"), "stats": stats})
+    csv_path = cfg.gold_value_trend_2005_json_path.replace(".json", ".csv")
+    write_json(
+        cfg.gold_value_trend_2005_json_path,
+        {
+            "meta": {
+                "title": "Gold value trend — quarter-end samples",
+                "notes": "Series is quarter-end sampled to stabilize quarter labels on long histories.",
+                "csv_path": csv_path,
+                "series": [{"key": "value", "label": "Gold (GLD ETF)", "unit": "USD"}],
+                "x": {"date_key": "date", "quarter_label_key": "quarter"},
+            },
+            "series": df_out.to_dict(orient="records"),
+            "stats": stats,
+        },
+    )
+    write_csv(csv_path, df_out.to_dict(orient="records"), ["date", "quarter", "value"])
 
-    return {"png_path": cfg.gold_value_trend_2005_png_path, "json_path": cfg.gold_value_trend_2005_json_path}
+    return {"png_path": cfg.gold_value_trend_2005_png_path, "json_path": cfg.gold_value_trend_2005_json_path, "csv_path": csv_path}
 
 
 def main(cfg: Config = CFG) -> None:

@@ -2,6 +2,7 @@
   "meta": {
     "title": "Gold vs US 10Y yield — last 12 months",
     "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+    "csv_path": "data/gld_vs_10y_12m.csv",
     "series": [
       {
         "key": "gld",
@@ -18,16 +19,6 @@
     ]
   },
   "series": [
-    {
-      "date": "2024-12-19",
-      "gld": 239.60000610351562,
-      "teny_yield_pct": 4.570000171661377
-    },
-    {
-      "date": "2024-12-20",
-      "gld": 242.10000610351562,
-      "teny_yield_pct": 4.52400016784668
-    },
     {
       "date": "2024-12-23",
       "gld": 240.9600067138672,
@@ -1280,6 +1271,11 @@
     },
     {
       "date": "2025-12-19",
+      "gld": 399.0199890136719,
+      "teny_yield_pct": 4.151000022888184
+    },
+    {
+      "date": "2025-12-21",
       "gld": 399.0199890136719,
       "teny_yield_pct": 4.151000022888184
     }

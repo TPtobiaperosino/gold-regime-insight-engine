@@ -2,6 +2,7 @@
   "meta": {
     "title": "Gold vs US Dollar — last 12 months",
     "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+    "csv_path": "data/gld_vs_usd_12m.csv",
     "series": [
       {
         "key": "gld",
@@ -18,16 +19,6 @@
     ]
   },
   "series": [
-    {
-      "date": "2024-12-19",
-      "gld": 239.60000610351562,
-      "dxy": 108.41000366210938
-    },
-    {
-      "date": "2024-12-20",
-      "gld": 242.10000610351562,
-      "dxy": 107.62000274658203
-    },
     {
       "date": "2024-12-23",
       "gld": 240.9600067138672,
@@ -1281,7 +1272,12 @@
     {
       "date": "2025-12-19",
       "gld": 399.0199890136719,
-      "dxy": 98.71800231933594
+      "dxy": 98.5999984741211
+    },
+    {
+      "date": "2025-12-21",
+      "gld": 399.0199890136719,
+      "dxy": 98.67400360107422
     }
   ]
 }

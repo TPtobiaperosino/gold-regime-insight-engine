@@ -1,13 +1,16 @@
 {
+  "meta": {
+    "title": "Gold / Oil ratio — last 12 months",
+    "csv_path": "data/gold_oil_ratio_12m.csv",
+    "series": [
+      {
+        "key": "ratio",
+        "label": "Gold / Oil ratio",
+        "unit": "ratio"
+      }
+    ]
+  },
   "series": [
-    {
-      "date": "2024-12-19",
-      "ratio": 37.079099061424095
-    },
-    {
-      "date": "2024-12-20",
-      "ratio": 37.84480256003206
-    },
     {
       "date": "2024-12-23",
       "ratio": 37.728193665861376
@@ -1010,15 +1013,19 @@
     },
     {
       "date": "2025-12-19",
-      "ratio": 77.62384588029235
+      "ratio": 76.97493671177538
+    },
+    {
+      "date": "2025-12-21",
+      "ratio": 76.90794515950287
     }
   ],
   "stats": {
-    "current_ratio": 77.62384588029235,
-    "percentile_12m": 99.2094861660079,
+    "current_ratio": 76.90794515950287,
+    "percentile_12m": 98.4126984126984,
     "high_12m": 77.8813092880182,
-    "drawdown_12m_pct": -0.3305843341355641,
+    "drawdown_12m_pct": -1.2498045261612911,
     "bias": "hedge / growth-stress / disinflation bias",
-    "as_of": "2025-12-19"
+    "as_of": "2025-12-21"
   }
 }

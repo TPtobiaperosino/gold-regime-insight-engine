@@ -11,38 +11,44 @@
   "regime_snapshot_meta": {
     "label": "USD strong · US Treasuries up",
     "metrics": {
-      "usd_momentum_12w_pct": 0.58,
+      "usd_momentum_12w_pct": 0.46,
       "rates_momentum_12w_pct": 1.27
     }
   },
   "signals": {
-    "mom_usd_12w": 0.0057870686156562545,
-    "mom_rates_12w": 0.012681753957804798
+    "mom_usd_12w": 0.004584787990283834,
+    "mom_rates_12w": 0.012681916554047268
   },
   "charts": {
     "gld_vs_usd_12m": {
       "png_path": "charts/gld_vs_usd_12m.png",
-      "json_path": "data/gld_vs_usd_12m.json"
+      "json_path": "data/gld_vs_usd_12m.json",
+      "csv_path": "data/gld_vs_usd_12m.csv"
     },
     "gld_vs_10y_12m": {
       "png_path": "charts/gld_vs_10y_12m.png",
-      "json_path": "data/gld_vs_10y_12m.json"
+      "json_path": "data/gld_vs_10y_12m.json",
+      "csv_path": "data/gld_vs_10y_12m.csv"
     },
     "gld_spy_ratio_12m": {
       "png_path": "charts/gld_spy_ratio_12m.png",
-      "json_path": "data/gld_spy_ratio_12m.json"
+      "json_path": "data/gld_spy_ratio_12m.json",
+      "csv_path": "data/gld_spy_ratio_12m.csv"
     },
     "gold_oil_ratio_12m": {
       "png_path": "charts/gold_oil_ratio_12m.png",
-      "json_path": "data/gold_oil_ratio_12m.json"
+      "json_path": "data/gold_oil_ratio_12m.json",
+      "csv_path": "data/gold_oil_ratio_12m.csv"
     },
     "credit_risk_premium_20y": {
       "png_path": "charts/credit_risk_premium_20y.png",
-      "json_path": "data/credit_risk_premium_20y.json"
+      "json_path": "data/credit_risk_premium_20y.json",
+      "csv_path": "data/credit_risk_premium_20y.csv"
     },
     "gold_value_trend_2005": {
       "png_path": "charts/gold_value_trend_2005.png",
-      "json_path": "data/gold_value_trend_2005.json"
+      "json_path": "data/gold_value_trend_2005.json",
+      "csv_path": "data/gold_value_trend_2005.csv"
     }
   },
   "insights": [
