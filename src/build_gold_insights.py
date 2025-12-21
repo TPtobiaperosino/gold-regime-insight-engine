@@ -165,7 +165,7 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     required = [cfg.usd, cfg.rates]
     if not all(r in px_weekly.columns for r in required):
         return {
-            "label": "USD unknown · Bond prices unknown (IEF)",
+            "label": "USD unknown · US Treasuries unknown",
             "metrics": {
                 "usd_momentum_12w_pct": None,
                 "rates_momentum_12w_pct": None,
@@ -176,7 +176,7 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
     idx = idx.intersection(px_weekly[cfg.rates].dropna().index)
     if idx.empty:
         return {
-            "label": "USD unknown · Bond prices unknown (IEF)",
+            "label": "USD unknown · US Treasuries unknown",
             "metrics": {
                 "usd_momentum_12w_pct": None,
                 "rates_momentum_12w_pct": None,
@@ -199,12 +199,11 @@ def build_regime_snapshot(px_weekly: pd.DataFrame, cfg: Config) -> Dict[str, obj
         rates_mom = None
     rates_label = "up" if (rates_mom is not None and rates_mom < 0) else ("down" if rates_mom is not None else "unknown")
 
-    # cfg.rates is IEF (bond price). We keep the historical bucketing key as-is,
-    # but present it as bond prices (inverse-to-yields).
+    # cfg.rates is IEF (bond price). Present it as US Treasuries price direction.
     bond_label = "down" if rates_label == "up" else ("up" if rates_label == "down" else "unknown")
 
     snapshot = {
-        "label": f"USD {usd_label} · Bond prices {bond_label} (IEF)",
+        "label": f"USD {usd_label} · US Treasuries {bond_label}",
         "metrics": {
             "usd_momentum_12w_pct": round(usd_mom * 100.0, 2) if usd_mom is not None and np.isfinite(usd_mom) else None,
             "rates_momentum_12w_pct": round(rates_mom * 100.0, 2) if rates_mom is not None and np.isfinite(rates_mom) else None,
@@ -372,7 +371,30 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
         fig.tight_layout()
         fig.savefig(cfg.gld_vs_usd_png_path, dpi=180)
         plt.close(fig)
-        write_json(cfg.gld_vs_usd_json_path, {"series": []})
+        write_json(
+            cfg.gld_vs_usd_json_path,
+            {
+                "meta": {
+                    "title": "Gold vs US Dollar — last 12 months",
+                    "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                    "series": [
+                        {
+                            "key": "gld",
+                            "label": "Gold (GLD ETF)",
+                            "unit": "USD",
+                            "source": "Yahoo Finance",
+                        },
+                        {
+                            "key": "dxy",
+                            "label": "US Dollar Index",
+                            "unit": "index",
+                            "source": "Yahoo Finance (DXY)",
+                        },
+                    ],
+                },
+                "series": [],
+            },
+        )
         return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
     gld_color = "#1b6ca8"
@@ -439,7 +461,30 @@ def save_gld_vs_usd_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, 
             "dxy": dxy.values.astype(float),
         }
     )
-    write_json(cfg.gld_vs_usd_json_path, {"series": df_out.to_dict(orient="records")})
+    write_json(
+        cfg.gld_vs_usd_json_path,
+        {
+            "meta": {
+                "title": "Gold vs US Dollar — last 12 months",
+                "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                "series": [
+                    {
+                        "key": "gld",
+                        "label": "Gold (GLD ETF)",
+                        "unit": "USD",
+                        "source": "Yahoo Finance",
+                    },
+                    {
+                        "key": "dxy",
+                        "label": "US Dollar Index",
+                        "unit": "index",
+                        "source": "Yahoo Finance (DXY)",
+                    },
+                ],
+            },
+            "series": df_out.to_dict(orient="records"),
+        },
+    )
 
     return {"png_path": cfg.gld_vs_usd_png_path, "json_path": cfg.gld_vs_usd_json_path}
 
@@ -470,7 +515,30 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
         fig.tight_layout()
         fig.savefig(cfg.gld_vs_teny_png_path, dpi=180)
         plt.close(fig)
-        write_json(cfg.gld_vs_teny_json_path, {"series": []})
+        write_json(
+            cfg.gld_vs_teny_json_path,
+            {
+                "meta": {
+                    "title": "Gold vs US 10Y yield — last 12 months",
+                    "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                    "series": [
+                        {
+                            "key": "gld",
+                            "label": "Gold (GLD ETF)",
+                            "unit": "USD",
+                            "source": "Yahoo Finance",
+                        },
+                        {
+                            "key": "teny_yield_pct",
+                            "label": "US 10Y Treasury yield",
+                            "unit": "%",
+                            "source": "Yahoo Finance (^TNX, auto-scaled)",
+                        },
+                    ],
+                },
+                "series": [],
+            },
+        )
         return {"png_path": cfg.gld_vs_teny_png_path, "json_path": cfg.gld_vs_teny_json_path}
 
     tny_pct, tnx_meta = _tnx_to_yield_percent_with_meta(tnx)
@@ -535,6 +603,24 @@ def save_gld_vs_teny_12m_chart(px_daily: pd.DataFrame, cfg: Config) -> Dict[str,
     write_json(
         cfg.gld_vs_teny_json_path,
         {
+            "meta": {
+                "title": "Gold vs US 10Y yield — last 12 months",
+                "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+                "series": [
+                    {
+                        "key": "gld",
+                        "label": "Gold (GLD ETF)",
+                        "unit": "USD",
+                        "source": "Yahoo Finance",
+                    },
+                    {
+                        "key": "teny_yield_pct",
+                        "label": "US 10Y Treasury yield",
+                        "unit": "%",
+                        "source": "Yahoo Finance (^TNX, auto-scaled)",
+                    },
+                ],
+            },
             "series": df_out.to_dict(orient="records"),
             "stats": {
                 "tnx_raw_last": tnx_meta.get("tnx_raw_last"),
@@ -692,27 +778,27 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
     ui_rows = [
         {
             "period": "1W",
-            "USD (DXY)": {"value": dxy_mom_1w, "display": _pct(dxy_mom_1w, 2)},
+            "USD": {"value": dxy_mom_1w, "display": _pct(dxy_mom_1w, 2)},
             "US 10Y yield Δ": {"value": y10_chg_1w_bps, "unit": "bps", "display": f"{_num(y10_chg_1w_bps, 1)} bps"},
-            "Gold (GLD)": {"value": gld_ret_1w, "display": _pct(gld_ret_1w, 2)},
+            "Gold": {"value": gld_ret_1w, "display": _pct(gld_ret_1w, 2)},
         },
         {
             "period": "4W",
-            "USD (DXY)": {"value": dxy_mom_4w, "display": _pct(dxy_mom_4w, 2)},
+            "USD": {"value": dxy_mom_4w, "display": _pct(dxy_mom_4w, 2)},
             "US 10Y yield Δ": {"value": y10_chg_4w_bps, "unit": "bps", "display": f"{_num(y10_chg_4w_bps, 1)} bps"},
-            "Gold (GLD)": {"value": gld_ret_4w, "display": _pct(gld_ret_4w, 2)},
+            "Gold": {"value": gld_ret_4w, "display": _pct(gld_ret_4w, 2)},
         },
         {
             "period": "12W",
-            "USD (DXY)": {"value": dxy_mom_12w, "display": _pct(dxy_mom_12w, 2)},
+            "USD": {"value": dxy_mom_12w, "display": _pct(dxy_mom_12w, 2)},
             "US 10Y yield Δ": {"value": y10_chg_12w_bps, "unit": "bps", "display": f"{_num(y10_chg_12w_bps, 1)} bps"},
-            "Gold (GLD)": {"value": gld_ret_12w, "display": _pct(gld_ret_12w, 2)},
+            "Gold": {"value": gld_ret_12w, "display": _pct(gld_ret_12w, 2)},
         },
         {
             "period": "12M",
-            "USD (DXY)": {"value": dxy_mom_52w, "display": _pct(dxy_mom_52w, 2)},
+            "USD": {"value": dxy_mom_52w, "display": _pct(dxy_mom_52w, 2)},
             "US 10Y yield Δ": {"value": y10_chg_52w_bps, "unit": "bps", "display": f"{_num(y10_chg_52w_bps, 1)} bps"},
-            "Gold (GLD)": {"value": gld_ret_12m, "display": _pct(gld_ret_12m, 2)},
+            "Gold": {"value": gld_ret_12m, "display": _pct(gld_ret_12m, 2)},
         },
     ]
 
@@ -721,7 +807,7 @@ def save_regime_snapshot(px_daily: pd.DataFrame, cfg: Config) -> Dict[str, str]:
         "title": "Regime snapshot",
         "headline": regime_str,
         "table": {
-            "columns": ["Period", "USD (DXY)", "US 10Y yield Δ", "Gold (GLD)"],
+            "columns": ["Period", "USD", "US 10Y yield Δ", "Gold"],
             "rows": ui_rows,
         },
         "highlights": [

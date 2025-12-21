@@ -1,4 +1,22 @@
 {
+  "meta": {
+    "title": "Gold vs US 10Y yield — last 12 months",
+    "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+    "series": [
+      {
+        "key": "gld",
+        "label": "Gold (GLD ETF)",
+        "unit": "USD",
+        "source": "Yahoo Finance"
+      },
+      {
+        "key": "teny_yield_pct",
+        "label": "US 10Y Treasury yield",
+        "unit": "%",
+        "source": "Yahoo Finance (^TNX, auto-scaled)"
+      }
+    ]
+  },
   "series": [
     {
       "date": "2024-12-19",

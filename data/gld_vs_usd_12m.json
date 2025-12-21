@@ -1,4 +1,22 @@
 {
+  "meta": {
+    "title": "Gold vs US Dollar — last 12 months",
+    "notes": "Levels are on different scales; consider indexing to 100 for single-axis charts.",
+    "series": [
+      {
+        "key": "gld",
+        "label": "Gold (GLD ETF)",
+        "unit": "USD",
+        "source": "Yahoo Finance"
+      },
+      {
+        "key": "dxy",
+        "label": "US Dollar Index",
+        "unit": "index",
+        "source": "Yahoo Finance (DXY)"
+      }
+    ]
+  },
   "series": [
     {
       "date": "2024-12-19",
