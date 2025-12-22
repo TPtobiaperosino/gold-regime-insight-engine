@@ -1,11 +1,24 @@
 # Gold Regime Insight Engine
 
-Builds a small set of gold/macro indicators into JSON files and PNG charts for use in dashboards, reports, or simple static sites.
+**Live dashboard:** https://gold-monitor.lovable.app
 
-The entrypoint script downloads market data, computes a few regime/ratio signals, and writes outputs into:
+Generates a small set of gold + macro indicators as JSON files and PNG charts for use in dashboards, reports, or simple static sites.
+
+The entrypoint script downloads market data, computes a handful of cross-asset views, and writes outputs into:
 
 - [data/](data/) (machine-readable JSON)
 - [charts/](charts/) (PNG charts)
+
+The dashboard primarily uses:
+
+- Gold vs USD (12M)
+- Gold vs rates (12M)
+- GLD/SPY ratio (12M)
+- Gold/Oil ratio (12M)
+- Credit risk premium (20Y)
+- Gold value trend (since 2005)
+
+For convenience, [data/latest.json](data/latest.json) acts as a single “manifest” pointing to the latest chart + JSON paths.
 
 ## Data Sources
 
