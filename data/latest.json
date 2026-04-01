@@ -1,23 +1,23 @@
 {
-  "asof": "2025-12-26",
+  "asof": "2026-03-27",
   "regime": {
     "usd": "strong",
-    "rates": "down"
+    "rates": "up"
   },
   "regime_snapshot": {
     "png_path": "charts/regime_snapshot.png",
     "json_path": "data/regime_snapshot.json"
   },
   "regime_snapshot_meta": {
-    "label": "USD strong · US Treasuries up",
+    "label": "USD strong · US Treasuries down",
     "metrics": {
-      "usd_momentum_12w_pct": 0.31,
-      "rates_momentum_12w_pct": 0.98
+      "usd_momentum_12w_pct": 1.76,
+      "rates_momentum_12w_pct": -0.93
     }
   },
   "signals": {
-    "mom_usd_12w": 0.003069949023902785,
-    "mom_rates_12w": 0.009804315515717255
+    "mom_usd_12w": 0.017577762539315644,
+    "mom_rates_12w": -0.009330393781111668
   },
   "charts": {
     "gld_vs_usd_12m": {
@@ -54,7 +54,7 @@
   "insights": [
     {
       "title": "Current macro regime",
-      "evidence": "USD=strong, Bond prices (IEF)=up (asof 2025-12-26)",
+      "evidence": "USD=strong, Bond prices (IEF)=down (asof 2026-03-27)",
       "metric": {}
     }
   ]

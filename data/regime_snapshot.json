@@ -1,7 +1,7 @@
 {
-  "asof": "2025-12-31",
+  "asof": "2026-04-01",
   "title": "Regime snapshot",
-  "headline": "USD weakening · Yields rising",
+  "headline": "USD strengthening · Yields rising",
   "table": {
     "columns": [
       "Period",
@@ -13,65 +13,65 @@
       {
         "period": "1W",
         "USD": {
-          "value": 0.0026525417785643324,
-          "display": "0.27%"
+          "value": -0.005801310762717726,
+          "display": "-0.58%"
         },
         "US 10Y yield Δ": {
-          "value": 2.6999950408935547,
+          "value": -12.900018692016602,
           "unit": "bps",
-          "display": "2.7 bps"
+          "display": "-12.9 bps"
         },
         "Gold": {
-          "value": -0.041896374809320513,
-          "display": "-4.19%"
+          "value": 0.03363040119299243,
+          "display": "3.36%"
         }
       },
       {
         "period": "4W",
         "USD": {
-          "value": -0.007172432566871612,
-          "display": "-0.72%"
+          "value": 0.005849099837015093,
+          "display": "0.58%"
         },
         "US 10Y yield Δ": {
-          "value": 2.4000167846679688,
+          "value": 17.799997329711914,
           "unit": "bps",
-          "display": "2.4 bps"
+          "display": "17.8 bps"
         },
         "Gold": {
-          "value": 0.01683129585271015,
-          "display": "1.68%"
+          "value": -0.08085189242355217,
+          "display": "-8.09%"
         }
       },
       {
         "period": "12W",
         "USD": {
-          "value": -0.007072181793249865,
-          "display": "-0.71%"
+          "value": 0.004428558487703516,
+          "display": "0.44%"
         },
         "US 10Y yield Δ": {
-          "value": 11.19999885559082,
+          "value": 13.99998664855957,
           "unit": "bps",
-          "display": "11.2 bps"
+          "display": "14.0 bps"
         },
         "Gold": {
-          "value": 0.11313653039744676,
-          "display": "11.31%"
+          "value": 0.07871842548918861,
+          "display": "7.87%"
         }
       },
       {
         "period": "12M",
         "USD": {
-          "value": -0.09793481842880825,
-          "display": "-9.79%"
+          "value": -0.0334983159714366,
+          "display": "-3.35%"
         },
         "US 10Y yield Δ": {
-          "value": -43.30000877380371,
+          "value": 32.59999752044678,
           "unit": "bps",
-          "display": "-43.3 bps"
+          "display": "32.6 bps"
         },
         "Gold": {
-          "value": 0.6367653308824828,
-          "display": "63.68%"
+          "value": 0.4962965454870767,
+          "display": "49.63%"
         }
       }
     ]
@@ -80,25 +80,25 @@
   "highlights": [
     {
       "label": "Gold drawdown (12M)",
-      "value": -0.0490233554602989,
-      "display": "-4.90%"
+      "value": -0.13230487227079524,
+      "display": "-13.23%"
     }
   ],
   "raw": {
-    "asof": "2025-12-31",
-    "regime": "USD weakening · Yields rising",
-    "dxy_mom_1w": 0.0026525417785643324,
-    "dxy_mom_4w": -0.007172432566871612,
-    "dxy_mom_12w": -0.007072181793249865,
-    "dxy_mom_12m": -0.09793481842880825,
-    "y10_chg_1w_bps": 2.6999950408935547,
-    "y10_chg_4w_bps": 2.4000167846679688,
-    "y10_chg_12w_bps": 11.19999885559082,
-    "y10_chg_12m_bps": -43.30000877380371,
-    "gld_ret_1w": -0.041896374809320513,
-    "gld_ret_4w": 0.01683129585271015,
-    "gld_ret_12w": 0.11313653039744676,
-    "gld_ret_12m": 0.6367653308824828,
-    "gld_dd_12m": -0.0490233554602989
+    "asof": "2026-04-01",
+    "regime": "USD strengthening · Yields rising",
+    "dxy_mom_1w": -0.005801310762717726,
+    "dxy_mom_4w": 0.005849099837015093,
+    "dxy_mom_12w": 0.004428558487703516,
+    "dxy_mom_12m": -0.0334983159714366,
+    "y10_chg_1w_bps": -12.900018692016602,
+    "y10_chg_4w_bps": 17.799997329711914,
+    "y10_chg_12w_bps": 13.99998664855957,
+    "y10_chg_12m_bps": 32.59999752044678,
+    "gld_ret_1w": 0.03363040119299243,
+    "gld_ret_4w": -0.08085189242355217,
+    "gld_ret_12w": 0.07871842548918861,
+    "gld_ret_12m": 0.4962965454870767,
+    "gld_dd_12m": -0.13230487227079524
   }
 }
